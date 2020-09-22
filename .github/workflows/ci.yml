@@ -13,7 +13,7 @@ jobs:
   test:
     name: Test default workflow
     # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralrecon') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
     runs-on: ubuntu-latest
     env:
       NXF_VER: ${{ matrix.nxf_ver }}
@@ -35,13 +35,13 @@ jobs:
 
       - name: Build new docker image
         if: env.GIT_DIFF
-        run: docker build --no-cache . -t nfcore/viralrecon:1.1.0
+        run: docker build --no-cache . -t francesccatala/viralrecon:1.0
 
       - name: Pull docker image
         if: ${{ !env.GIT_DIFF }}
         run: |
-          docker pull nfcore/viralrecon:dev
-          docker tag nfcore/viralrecon:dev nfcore/viralrecon:1.1.0
+          docker pull francesccatala/viralrecon:dev
+          docker tag nfcore/viralrecon:dev francesccatala/viralrecon:1.0
 
       - name: Install Nextflow
         run: |
@@ -54,7 +54,7 @@ jobs:
 
   parameters:
     name: Test workflow parameters
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralrecon') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
     runs-on: ubuntu-latest
     env:
       NXF_VER: '19.10.0'
@@ -94,7 +94,7 @@ jobs:
 
   test_sra:
     name: Test SRA workflow
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralrecon') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
     runs-on: ubuntu-latest
     env:
       NXF_VER: '19.10.0'
@@ -134,7 +134,7 @@ jobs:
 
   test_sispa:
     name: Test SISPA workflow
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralrecon') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
     runs-on: ubuntu-latest
     env:
       NXF_VER: '19.10.0'
@@ -178,7 +178,7 @@ jobs:
     # Only run if the tests passed
     needs: test
     # Only run for the nf-core repo, for releases and merged PRs
-    if: ${{ github.repository == 'nf-core/viralrecon' && (github.event_name == 'release' || github.event_name == 'push') }}
+    if: ${{ github.repository == 'MicrobialGenomics/viralrecon' && (github.event_name == 'release' || github.event_name == 'push') }}
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
