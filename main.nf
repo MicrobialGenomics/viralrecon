@@ -81,6 +81,7 @@ def helpMessage() {
       --skip_snpeff [bool]              Skip SnpEff and SnpSift annotation of variants (Default: false)
       --skip_variants_quast [bool]      Skip generation of QUAST aggregated report for consensus sequences (Default: false)
       --skip_variants [bool]            Skip variant calling steps in the pipeline (Default: false)
+      --skip_codfreq [bool]             Skip codon usage calling steps in the pipeline (Default: false)
 
     De novo assembly
       --assemblers [str]                Specify which assembly algorithms you would like to use (Default: 'spades,metaspades,unicycler,minia')
@@ -1128,7 +1129,8 @@ if (params.skip_markduplicates) {
                                                                                 ch_markdup_bam_mpileup,
                                                                                 ch_markdup_bam_varscan2_consensus,
                                                                                 ch_markdup_bam_bcftools,
-                                                                                ch_markdup_bam_bcftools_consensus
+                                                                                ch_markdup_bam_bcftools_consensus,
+                                                                                ch_markdup_bam_codfreq
         path "*.{flagstat,idxstats,stats}" into ch_markdup_bam_flagstat_mqc
         path "*.txt" into ch_markdup_bam_metrics_mqc
 
@@ -1979,6 +1981,32 @@ if (!params.skip_variants && callers.size() > 2) {
     }
 }
 
+////////////////////////////////////////////////////
+/* --                 CODFREQ                  -- */
+////////////////////////////////////////////////////
+
+/*
+ * STEP 5.9: Extract codon frequency with codfreq 
+ */
+process CODFREQ {
+    tag "$sample"
+    label 'proceess_medium'
+    publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
+
+    when:
+    !skip_codfreq
+
+    input:
+    tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq
+
+    output:
+    path "*.codfreq"
+
+    script:
+    """
+    sam2codfreq.py ${bam[0]} ${sample}.codfreq
+    """
+}
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 /* --                                                                     -- */
