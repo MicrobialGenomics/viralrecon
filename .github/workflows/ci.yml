@@ -41,7 +41,7 @@ jobs:
         if: ${{ !env.GIT_DIFF }}
         run: |
           docker pull francesccatala/viralrecon:dev
-          docker tag nfcore/viralrecon:dev francesccatala/viralrecon:1.0
+          docker tag francesccatala/viralrecon:dev francesccatala/viralrecon:1.0
 
       - name: Install Nextflow
         run: |
@@ -75,13 +75,13 @@ jobs:
 
       - name: Build new docker image
         if: env.GIT_DIFF
-        run: docker build --no-cache . -t nfcore/viralrecon:1.1.0
+        run: docker build --no-cache . -t francesccatala/viralrecon:1.0
 
       - name: Pull docker image
         if: ${{ !env.GIT_DIFF }}
         run: |
-          docker pull nfcore/viralrecon:dev
-          docker tag nfcore/viralrecon:dev nfcore/viralrecon:1.1.0
+          docker pull francesccatala/viralrecon:dev
+          docker tag francesccatala/viralrecon:dev francesccatala/viralrecon:1.0
 
       - name: Install Nextflow
         run: |
@@ -115,13 +115,13 @@ jobs:
 
       - name: Build new docker image
         if: env.GIT_DIFF
-        run: docker build --no-cache . -t nfcore/viralrecon:1.1.0
+        run: docker build --no-cache . -t francesccatala/viralrecon:1.0
 
       - name: Pull docker image
         if: ${{ !env.GIT_DIFF }}
         run: |
-          docker pull nfcore/viralrecon:dev
-          docker tag nfcore/viralrecon:dev nfcore/viralrecon:1.1.0
+          docker pull francesccatala/viralrecon:dev
+          docker tag francesccatala/viralrecon:dev francesccatala/viralrecon:1.0
 
       - name: Install Nextflow
         run: |
@@ -155,13 +155,13 @@ jobs:
 
       - name: Build new docker image
         if: env.GIT_DIFF
-        run: docker build --no-cache . -t nfcore/viralrecon:1.1.0
+        run: docker build --no-cache . -t francesccatala/viralrecon:1.0
 
       - name: Pull docker image
         if: ${{ !env.GIT_DIFF }}
         run: |
-          docker pull nfcore/viralrecon:dev
-          docker tag nfcore/viralrecon:dev nfcore/viralrecon:1.1.0
+          docker pull francesccatala/viralrecon:dev
+          docker tag francesccatala/viralrecon:dev francesccatala/viralrecon:1.0
 
       - name: Install Nextflow
         run: |
@@ -187,19 +187,19 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build new docker image
-        run: docker build --no-cache . -t nfcore/viralrecon:latest
+        run: docker build --no-cache . -t francesccatala/viralrecon:latest
 
       - name: Push Docker image to DockerHub (dev)
         if: ${{ github.event_name == 'push' }}
         run: |
           echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker tag nfcore/viralrecon:latest nfcore/viralrecon:dev
-          docker push nfcore/viralrecon:dev
+          docker tag francesccatala/viralrecon:latest nfcofrancesccatalare/viralrecon:dev
+          docker push francesccatala/viralrecon:dev
 
       - name: Push Docker image to DockerHub (release)
         if: ${{ github.event_name == 'release' }}
         run: |
           echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker push nfcore/viralrecon:latest
-          docker tag nfcore/viralrecon:latest nfcore/viralrecon:${{ github.ref }}
-          docker push nfcore/viralrecon:${{ github.ref }}
+          docker push francesccatala/viralrecon:latest
+          docker tag francesccatala/viralrecon:latest francesccatala/viralrecon:${{ github.ref }}
+          docker push francesccatala/viralrecon:${{ github.ref }}
