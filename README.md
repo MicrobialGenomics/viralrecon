@@ -20,7 +20,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 1. Download samples via SRA, ENA or GEO ids ([`ENA FTP`](https://ena-docs.readthedocs.io/en/latest/retrieval/file-download.html), [`parallel-fastq-dump`](https://github.com/rvalieris/parallel-fastq-dump); *if required*)
 2. Merge re-sequenced FastQ files ([`cat`](http://www.linfo.org/cat.html); *if required*)
 3. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-4. Adapter trimming ([`fastp`](https://github.com/OpenGene/fastp))
+4. Adapter trimming ([`fastp`](https://github.com/OpenGene/fastp) or [`trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic))
 5. Variant calling
     1. Read alignment ([`Bowtie 2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
     2. Sort and index alignments ([`SAMtools`](https://sourceforge.net/projects/samtools/files/samtools/))
@@ -32,6 +32,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
         * Variant annotation ([`SnpEff`](http://snpeff.sourceforge.net/SnpEff.html), [`SnpSift`](http://snpeff.sourceforge.net/SnpSift.html))
         * Consensus assessment report ([`QUAST`](http://quast.sourceforge.net/quast))
     8. Intersect variants across callers ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html))
+    9. Codon frequency calling ([`codfrq`](https://github.com/hivdb/codfreq))
 6. _De novo_ assembly
     1. Primer trimming ([`Cutadapt`](https://cutadapt.readthedocs.io/en/stable/guide.html); *amplicon data only*)
     2. Removal of host reads ([`Kraken 2`](http://ccb.jhu.edu/software/kraken2/))
