@@ -1991,7 +1991,7 @@ if (!params.skip_variants && callers.size() > 2) {
  */
 process CODFREQ {
     tag "$sample"
-    label 'proceess_medium'
+    label 'process_high'
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
@@ -2002,11 +2002,11 @@ process CODFREQ {
     path gff from ch_gff
 
     output:
-    path "*.codfreq"
+    path "*.csv"
 
     script:
     """
-    bam2codfreq.R ${bam[0]} ${gff} ${sample}.codfreq
+    bam2codfreq.R ${bam[0]} ${gff} ${sample}
     """
 }
 ///////////////////////////////////////////////////////////////////////////////

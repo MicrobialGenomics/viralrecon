@@ -26,7 +26,9 @@ read_gff <- function(gff_file) {
     mutate(attributes = str_remove_all(attributes, '.*gene=|;.*'),
            type = as.character(type)) %>%
     filter(type == 'CDS') %>%
-    select(attributes, start, end)
+    mutate(id = 1:nrow(.)) %>%
+    unite('gene', c(attributes, id), sep = '_') %>%
+    select(gene, start, end)
 }
 
 #' READ BAM FILE
@@ -93,13 +95,13 @@ prepro_bam <- function(bam = bam) {
 #' @export
 #'
 #' @examples
-codfreq <- function(prepro_bam, gff) {
+codfreq <- function(prepro_bam, gff, cores) {
   map_dfr(1:nrow(gff), function(i) {
     start = filter(gff, row_number() == i) %>% pull(start)
     end = filter(gff, row_number() == i) %>% pull(end)
-    gene = filter(gff, row_number() == i) %>% pull(attributes)
-        
-    prep <- mclapply(prepro_bam, function(read) {
+    gene = filter(gff, row_number() == i) %>% pull(gene)
+    message(gene)
+    prep <- lapply(prepro_bam, function(read) {
       if (max(read$pos) > start & min(read$pos) < end) {
         dat2 <- read %>%
           .[, .(pos, seq)] %>%
@@ -115,7 +117,6 @@ codfreq <- function(prepro_bam, gff) {
           as.data.table()
       }
     })
-    
     return(prep)
   })
 }
@@ -131,13 +132,12 @@ bam <- read_bam(bam_file)
 prepro <- prepro_bam(bam)
 codfreq <- codfreq(prepro, gff)  
   
-results <- map_dfr(1:length(codfreq), function(y) { 
-    codfreq[[y]] 
-  }) %>%
+codfreq %>%
   as_tibble() %>%
   group_by(codon, aa_pos, cds_pos, gene) %>%
   count(codon) %>%
-  arrange(aa_pos) %>%
   ungroup() %>%
+  separate(gene, c('gene', 'id')) %>%
+  arrange(id, aa_pos) %>%
   filter(!str_detect(codon, '-')) %>% 
-  fwrite(file = out_file, sep = '\t')
+  fwrite(file = paste0(out_file,'_codfreq.csv'), sep = '\t')
