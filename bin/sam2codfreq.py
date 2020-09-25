@@ -12,19 +12,8 @@ from collections import defaultdict, Counter
 REF_CODON_OFFSET = 0
 
 GENE_AA_RANGE = (
-    ('ORF1ab',266,13468),
-    ('ORF1ab',13468,21555),
-    ('ORF1a',266,13483),
-    ('S',21563,25384),
-    ('ORF3a',25393,26220),
-    ('E',26245,26472),
-    ('M',26523,27191),
-    ('ORF6',27202,27387),
-    ('ORF7a',27394,27759),
-    ('ORF7b',27756,27887),
-    ('ORF8',27894,28259),
-    ('N',28274,29533),
-    ('ORF10',29558,29674)
+    ('S', 7188,8462),
+    ('aa',13468,21555)
 )
 
 # see https://en.wikipedia.org/wiki/Phred_quality_score
