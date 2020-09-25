@@ -1099,7 +1099,8 @@ if (params.skip_markduplicates) {
                 ch_markdup_bam_mpileup
                 ch_markdup_bam_varscan2_consensus
                 ch_markdup_bam_bcftools
-                ch_markdup_bam_bcftools_consensus }
+                ch_markdup_bam_bcftools_consensus
+                ch_markdup_bam_codfreq }
     ch_markdup_bam_flagstat_mqc = Channel.empty()
     ch_markdup_bam_metrics_mqc = Channel.empty()
 } else {
@@ -1998,13 +1999,14 @@ process CODFREQ {
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq
+    path gff from ch_gff
 
     output:
     path "*.codfreq"
 
     script:
     """
-    sam2codfreq.py ${bam[0]} ${sample}.codfreq
+    bam2codfreq.R ${bam[0]} ${gff} ${sample}.codfreq
     """
 }
 ///////////////////////////////////////////////////////////////////////////////
