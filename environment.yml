@@ -61,6 +61,6 @@ dependencies:
 
   ## new
   - bioconda::trimmomatic=0.39=1
-  - conda-forge::r-data.table=1.12.8=r36hcdcec82_1
-  - bioconda::bioconductor-rsamtools=2.2.0=r36he1b5a44_0
   - conda-forge::r-ape=5.4_1=r36h51c796c_0
+  - bioconda::pysam=0.15.4
+  
