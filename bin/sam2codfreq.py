@@ -6,15 +6,16 @@ import sys
 import csv
 import pysam
 from statistics import mean
+import pandas as pd
 from multiprocessing import Process, Queue
 from collections import defaultdict, Counter
 
-REF_CODON_OFFSET = int(sys.argv[5])
+df = pd.read_csv(sys.argv[2], delimiter=',')
 
-GENE_AA_RANGE = (
-    (sys.argv[2], int(sys.argv[3]), int(sys.argv[4])),
-    ('bug_resolution', 100000000000, 10000000000000)
-    )
+REF_CODON_OFFSET = int(df.iloc[0]['offset']) 
+
+df = df.drop(columns = ['offset'])
+GENE_AA_RANGE = [list(row) for row in df.values]
 
 # see https://en.wikipedia.org/wiki/Phred_quality_score
 OVERALL_QUALITY_CUTOFF = int(os.environ.get('OVERALL_QUALITY_CUTOFF', 25))
@@ -113,8 +114,8 @@ def reads_producer(filename, offset):
 
 
 def main():
-    if len(sys.argv) != 7:
-        print("Usage: {} <SAMFILE> <GENE> <START> <END> <OFFSET> <OUTPUT>".format(sys.argv[0]),
+    if len(sys.argv) != 4:
+        print("Usage: {} <SAMFILE> <GFF_FILE> <OUTPUT>".format(sys.argv[0]),
               file=sys.stderr)
         exit(1)
     with pysam.AlignmentFile(sys.argv[1], 'rb') as samfile:
@@ -147,7 +148,7 @@ def main():
                 for cdpos, codon in results:
                     codonfreqs[cdpos][codon] += 1
 
-    with open(sys.argv[6], 'w') as out:
+    with open(sys.argv[3], 'w') as out:
         writer = csv.writer(out, delimiter='\t')
         for cdpos, counter in sorted(codonfreqs.items()):
             for gene, start, end in GENE_AA_RANGE:
@@ -163,7 +164,7 @@ def main():
     print('{} reads processed. Of them:'.format(num_finished))
     print('  Length of {} were too short'.format(num_tooshort))
     print('  Quality of {} were too low'.format(num_lowqual))
-    print("{} done.".format(sys.argv[2]))
+    print("{} done.".format(sys.argv[3]))
 
 
 if __name__ == '__main__':

@@ -2006,14 +2006,6 @@ process PREPRO_CODFREQ_GFF {
 }
 
 /*
- * Create channels for prepro codfreq gff
- */
-
-ch_prepro_gff
-    .splitCsv(header:true)
-    .map{ row-> tuple(row.gene, row.start, row.end, row.offset) }
-    .set { ch_pro_gff }
-/*
  * STEP 5.9: Extract codon frequency with codfreq 
  */
 process CODFREQ {
@@ -2026,14 +2018,14 @@ process CODFREQ {
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq
-    each input from ch_pro_gff
+    each input from ch_prepro_gff
 
     output:
     path "*.codfreq"
 
     script:
     """
-    sam2codfreq.py ${bam[0]} ${input[0]} ${input[1]} ${input[2]} ${input[3]} ${sample}_${input[0]}_${input[1]}_${input[2]}.codfreq
+    sam2codfreq.py ${bam[0]} $input ${sample}_${input.baseName.replaceAll('codfreq_gff_', '')}.codfreq
     """
 }
 
