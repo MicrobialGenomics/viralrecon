@@ -6,7 +6,7 @@ library(tidyverse)
 gff_file <- args[1]
 
 dat <- ape::read.gff(gff_file) %>%
-    #dplyr::as_tibble() %>%
+    dplyr::as_tibble() %>%
     dplyr::mutate(gene = stringr::str_remove_all(attributes, '.*gene=|;.*'),
            type = as.character(type)) %>%
     dplyr::filter(type == 'CDS') %>%
@@ -15,7 +15,7 @@ dat <- ape::read.gff(gff_file) %>%
            s = dplyr::if_else(offset == 1, (start + 1) / 3, NaN ),
            s = dplyr::if_else(offset == 0, (start + 2) / 3, s),
            s = dplyr::if_else(offset == -1, (start + 3) / 3, s),
-           e = round(((end - start + 1) / 3) + s - 1),0) %>% 
+           e = round(((end - start + 1) / 3) + s - 1)) %>% 
     dplyr::select(gene, start = s, end = e, offset)
 
 purrr::map(levels(factor(dat$offset)), function(off){

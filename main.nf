@@ -58,6 +58,7 @@ def helpMessage() {
       --illclip_misamtch [int]          Specifies the maximum mismatch count which will still allow a full match to be performed (Default: 2)
       --illclip_pal_thres[int]          Specifies how accurate the match between the two 'adapter ligated' reads must be for PE palindrome read alignment (Default: 30)
       --illclip_simple_thres [int]      Specifies how accurate the match between any adapter etc. sequence must be against a read (Default: 10)
+      --adapter_type [str]              Specifies adapters used (Default: Nextera) (Options: Nextera, TruSeq2, TruSeq3)
 
     Kraken2
       --kraken2_db [file]               Full path to Kraken2 database built from host genome (Default: kraken2_human.tar.gz hosted on Zenodo)
@@ -263,6 +264,7 @@ if (!params.skip_adapter_trimming)  {
         if (params.illclip_misamtch)        summary['Trimmomatic IlluminaClip Mismatches'] = params.illclip_misamtch
         if (params.illclip_pal_thres)       summary['Trimmomatic IlluminaClip Threshold'] = params.illclip_pal_thres
         if (params.illclip_simple_thres)    summary['Trimmomatic IlluminaClip Threshold'] = params.illclip_simple_thres
+        if (params.adapter_type)            summary['Trimmomatic Adapter Type'] = params.adapter_type
     } else {
         summary['Adapter trimming with'] = 'fastp'
         if (params.cut_mean_quality)          summary['Fastp Mean Qual'] = params.cut_mean_quality
@@ -856,7 +858,7 @@ if (!params.skip_adapter_trimming && params.fastp) {
             OUT_READS='${sample}_1.trim.fastq.gz ${sample}_1.fail.fastq.gz ${sample}_2.trim.fastq.gz ${sample}_2.fail.fastq.gz'
             
             trimmomatic PE -threads $task.cpus -phred33 \${IN_READS} \${OUT_READS} \\
-                ILLUMINACLIP:/opt/conda/envs/nf-core-viralrecon-1.1.0/share/trimmomatic-0.39-1/adapters/TruSeq3-PE.fa:${params.illclip_misamtch}:${params.illclip_misamtch}:${params.illclip_simple_thres} \\
+                ILLUMINACLIP:/opt/conda/envs/nf-core-viralrecon-1.1.0/share/trimmomatic-0.39-1/adapters/${params.adapter_type}-PE.fa:${params.illclip_misamtch}:${params.illclip_misamtch}:${params.illclip_simple_thres} \\
                 LEADING:$params.leading \\
                 TRAILING:$params.trailing \\
                 MINLEN:$params.minlen \\
