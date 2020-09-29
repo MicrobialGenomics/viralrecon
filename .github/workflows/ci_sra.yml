@@ -18,7 +18,7 @@ jobs:
       NXF_ANSI_LOG: false
     strategy:
       matrix:
-      parameters: [--skip_sra, '']
+        parameters: [--skip_sra, '']
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2
