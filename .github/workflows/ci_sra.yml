@@ -1,0 +1,49 @@
+name: nf-core CI SRA
+# This workflow is triggered on releases and pull-requests.
+# It runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+  release:
+    types: [published]
+  test_sra:
+    name: Test SRA workflow
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
+    runs-on: ubuntu-latest
+    env:
+      NXF_VER: '19.10.0'
+      NXF_ANSI_LOG: false
+    strategy:
+      matrix:
+      parameters: [--skip_sra, '']
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v2
+
+      - name: Check if Dockerfile or Conda environment changed
+        uses: technote-space/get-diff-action@v1
+        with:
+          PREFIX_FILTER: |
+            Dockerfile
+            environment.yml
+
+      - name: Build new docker image
+        if: env.GIT_DIFF
+        run: docker build --no-cache . -t francesccatala/viralrecon:1.0
+
+      - name: Pull docker image
+        if: ${{ !env.GIT_DIFF }}
+        run: |
+            docker pull francesccatala/viralrecon:dev
+            docker tag francesccatala/viralrecon:dev francesccatala/viralrecon:1.0
+
+      - name: Install Nextflow
+        run: |
+            wget -qO- get.nextflow.io | bash
+            sudo mv nextflow /usr/local/bin/
+
+      - name: Run pipeline with minimal data via SRA ids and various options
+        run: |
+            nextflow run ${GITHUB_WORKSPACE} -profile test_sra,docker ${{ matrix.parameters }}
