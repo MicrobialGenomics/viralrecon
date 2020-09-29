@@ -1,4 +1,4 @@
-name: nf-core CI amplicon protocol
+name: nf-core CI amplicon
 # This workflow is triggered on releases and pull-requests.
 # It runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on:
