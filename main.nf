@@ -256,15 +256,15 @@ if (params.skip_sra)                 summary['Skip SRA Download'] = params.skip_
 if (!params.skip_adapter_trimming)  {
      if (!params.fastp) {
         summary['Adapter trimming with'] = 'trimmomatic'
-        if (params.leading)                 summary['Trimmomatic Leading'] = params.leading
-        if (params.trailing)                summary['Trimmomatic Trailing'] = params.trailing
-        if (params.minlen)                  summary['Trimmomatic Min Length'] = params.minlen
-        if (params.sliding_window)          summary['Trimmomatic Sliding window'] = params.sliding_window
-        if (params.sliding_window_quality)  summary['Trimmomatic Sliding window Qual'] = params.sliding_window_quality
-        if (params.illclip_misamtch)        summary['Trimmomatic IlluminaClip Mismatches'] = params.illclip_misamtch
-        if (params.illclip_pal_thres)       summary['Trimmomatic IlluminaClip Threshold'] = params.illclip_pal_thres
-        if (params.illclip_simple_thres)    summary['Trimmomatic IlluminaClip Threshold'] = params.illclip_simple_thres
-        if (params.adapter_type)            summary['Trimmomatic Adapter Type'] = params.adapter_type
+        if (params.leading)                 summary['Trim Leading'] = params.leading
+        if (params.trailing)                summary['Trim Trailing'] = params.trailing
+        if (params.minlen)                  summary['Trim Min Length'] = params.minlen
+        if (params.sliding_window)          summary['Trim Sliding wind'] = params.sliding_window
+        if (params.sliding_window_quality)  summary['Trim Sliding wind Q'] = params.sliding_window_quality
+        if (params.illclip_misamtch)        summary['Trim Mismatches'] = params.illclip_misamtch
+        if (params.illclip_pal_thres)       summary['Trim Pal Thres'] = params.illclip_pal_thres
+        if (params.illclip_simple_thres)    summary['Trim Simple Thres'] = params.illclip_simple_thres
+        if (params.adapter_type)            summary['Trim Adapter Type'] = params.adapter_type
     } else {
         summary['Adapter trimming with'] = 'fastp'
         if (params.cut_mean_quality)          summary['Fastp Mean Qual'] = params.cut_mean_quality
