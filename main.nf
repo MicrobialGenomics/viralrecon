@@ -3452,10 +3452,8 @@ process MULTIQC {
     path (multiqc_config) from ch_multiqc_config
     path (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
     path ('fastqc/*') from ch_fastqc_raw_reports_mqc.collect().ifEmpty([])
-    if (params.fastp) {
-        path ('fastp/log/*') from ch_fastp_trimmomatic_mqc.collect().ifEmpty([])
-        path ('fastp/fastqc/*') from ch_fastp_trimmomatic_fastqc_mqc.collect().ifEmpty([])
-    }
+    path ('fastp/log/*') from ch_fastp_trimmomatic_mqc.collect().ifEmpty([])
+    path ('fastp/fastqc/*') from ch_fastp_trimmomatic_fastqc_mqc.collect().ifEmpty([])
     path ('bowtie2/log/*') from ch_bowtie2_mqc.collect().ifEmpty([])
     path ('bowtie2/flagstat/*') from ch_sort_bam_flagstat_mqc.collect().ifEmpty([])
     path ('ivar/trim/flagstat/*') from ch_ivar_trim_flagstat_mqc.collect().ifEmpty([])
