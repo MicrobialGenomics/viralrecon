@@ -299,6 +299,11 @@ if (!params.skip_variants) {
     if (params.skip_mosdepth)        summary['Skip mosdepth'] = 'Yes'
     if (params.skip_snpeff)          summary['Skip SnpEff'] = 'Yes'
     if (params.skip_variants_quast)  summary['Skip Variants QUAST'] = 'Yes'
+    if (params.skip_codfreq) {
+        summary['Codon Frquency'] = 'No'
+    } else {
+        summary['Codon Frequency'] = 'Yes'
+    }
 } else {
     summary['Skip Variant Calling']  = 'Yes'
 }
@@ -2021,6 +2026,9 @@ process PREPRO_CODFREQ_GFF {
     tag "$gff"
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
+    when:
+    !skip_codfreq && !skip_variants
+    
     input:
     path gff from ch_gff
 
@@ -2042,7 +2050,7 @@ process CODFREQ {
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
-    !skip_codfreq
+    !skip_codfreq && !skip_variants
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq
