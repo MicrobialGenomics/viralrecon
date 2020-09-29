@@ -8,6 +8,7 @@ on:
   pull_request:
   release:
     types: [published]
+jobs:
   test_sra:
     name: Test SRA workflow
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}

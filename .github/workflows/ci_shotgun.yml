@@ -1,4 +1,4 @@
-name: nf-core CI default metagenomics protocol
+name: nf-core CI metagenomics
 # This workflow is triggered on releases and pull-requests.
 # It runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on:
@@ -8,7 +8,6 @@ on:
   pull_request:
   release:
     types: [published]
-
 jobs:
   test_sispa:
     name: Test SISPA workflow
