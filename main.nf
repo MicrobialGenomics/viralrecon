@@ -2027,8 +2027,8 @@ process PREPRO_CODFREQ_GFF {
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
-    !skip_codfreq && !skip_variants
-    
+    !skip_codfreq && !skip_variants && params.gff
+
     input:
     path gff from ch_gff
 
@@ -2050,7 +2050,7 @@ process CODFREQ {
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
-    !skip_codfreq && !skip_variants
+    !skip_codfreq && !skip_variants && params.gff
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq

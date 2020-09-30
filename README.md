@@ -1,15 +1,13 @@
-**MicrobialGenomics/viralrecon forked from** [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
+## **MicrobialGenomics/viralrecon forked from** [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
 
 [![GitHub Actions CI Status Amplicon Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20amplicon/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![GitHub Actions CI Status Metagen Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20metagenomics/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![Actions Status](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 
-
 ## Pipeline additions:
 
 1. Adapter trimming with [`Trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic)
 2. Codon Frequency with [`CodFrq`](https://github.com/hivdb/codfreq)
-
 
 # ![nf-core/viralrecon](docs/images/nf-core-viralrecon_logo.png)
 
