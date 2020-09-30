@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pysam
 import numpy
 from scipy import stats
@@ -26,7 +27,7 @@ def repeat_to_length(string_to_expand, length):
 file=sys.argv[1]
 
 samfile = pysam.AlignmentFile(file,"rb")
-threshold=Decimal(sys.argv[2])
+threshold=Decimal(float(sys.argv[2]))
 Sequence=''
 X=Decimal(0)
 for pileupcolumn in samfile.pileup(start=1,end=30000,truncate=True):

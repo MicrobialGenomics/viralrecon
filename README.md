@@ -1,4 +1,4 @@
-# MicrobialGenomics/viralrecon forked from [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
+# MicrobialGenomics/viralrecon forked from nf-core/viralrecon
 
 [![GitHub Actions CI Status Amplicon Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20amplicon/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![GitHub Actions CI Status Metagen Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20metagenomics/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)

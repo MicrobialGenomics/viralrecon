@@ -93,6 +93,7 @@ def helpMessage() {
       --skip_variants_quast [bool]      Skip generation of QUAST aggregated report for consensus sequences (Default: false)
       --skip_variants [bool]            Skip variant calling steps in the pipeline (Default: false)
       --skip_codfreq [bool]             Skip codon usage calling steps in the pipeline (Default: false)
+      --custom_consensus_thres [int]    Minimum base frequency on custom consensus (Default: 0.15)
 
     De novo assembly
       --assemblers [str]                Specify which assembly algorithms you would like to use (Default: 'spades,metaspades,unicycler,minia')
@@ -1164,7 +1165,8 @@ if (params.skip_markduplicates) {
                                                                                 ch_markdup_bam_varscan2_consensus,
                                                                                 ch_markdup_bam_bcftools,
                                                                                 ch_markdup_bam_bcftools_consensus,
-                                                                                ch_markdup_bam_codfreq
+                                                                                ch_markdup_bam_codfreq,
+                                                                                ch_markdup_bam_custom_consensus
         path "*.{flagstat,idxstats,stats}" into ch_markdup_bam_flagstat_mqc
         path "*.txt" into ch_markdup_bam_metrics_mqc
 
@@ -2013,6 +2015,30 @@ if (!params.skip_variants && callers.size() > 2) {
             */*.vcf.gz
         """
     }
+}
+
+////////////////////////////////////////////////////
+/* --             CUSTOM CONSENSUS             -- */
+////////////////////////////////////////////////////
+
+process CUSTOM_CONSENSUS {
+    tag "$sample"
+    label "process_medium"
+    publishDir "${params.outdir}/variants/custom_consensus", mode: params.publish_dir_mode
+    
+    when:
+    !params.skip_variants
+    
+    input: 
+    tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_custom_consensus
+
+    output:
+    path "*.fa"
+
+    script:
+    """ 
+    consensusSequence_v2.py ${bam[0]} $params.custom_consensus_thres > ${sample}_custom_consensus.fa
+    """  
 }
 
 ////////////////////////////////////////////////////
