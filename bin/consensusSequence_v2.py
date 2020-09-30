@@ -51,7 +51,7 @@ for pileupcolumn in samfile.pileup(start=1,end=30000,truncate=True):
             Q.append(pileupread.alignment.query_qualities[pileupread.query_position])
     #R=reject_outliers(Q,R,m=4)
     R=numpy.ravel(R)
-    if len(R) < 10:
+    if len(R) < 10: ### Number of effective(>Q25) bases covering poistion, otherwise base="N"
         Sequence+='N'
         X=X+1
         continue
