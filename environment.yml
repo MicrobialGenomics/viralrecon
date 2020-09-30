@@ -62,5 +62,5 @@ dependencies:
   ## new
   - bioconda::trimmomatic=0.39=1
   - conda-forge::r-ape=5.4_1=r36h51c796c_0
-  - bioconda::pysam=0.15.4
+  - bioconda::pysam=0.15.4=py36h873a209_1
   
