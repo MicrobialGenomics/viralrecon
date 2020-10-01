@@ -2081,7 +2081,7 @@ process CODFREQ {
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq
-    each input from ch_prepro_gff
+    each path(input) from ch_prepro_gff
 
     output:
     path "*.codfreq"
@@ -2476,7 +2476,6 @@ process SPADES_VG {
     script:
     """
     minimap2 -c -t $task.cpus -x asm20 $fasta $scaffolds > ${sample}.paf
-
     cat $scaffolds $fasta > ${sample}.withRef.fasta
     seqwish --paf-alns ${sample}.paf --seqs ${sample}.withRef.fasta --gfa ${sample}.gfa --threads $task.cpus
 
