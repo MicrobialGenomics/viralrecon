@@ -2073,7 +2073,7 @@ process PREPRO_CODFREQ_GFF {
  */
 process CODFREQ {
     tag "$sample"
-    label 'process_high'
+    label 'process_medium'
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
@@ -2088,7 +2088,7 @@ process CODFREQ {
 
     script:
     """
-    sam2codfreq.py ${bam[0]} $input ${sample}_${input.baseName.replaceAll('codfreq_gff_', '')}.codfreq
+    sam2codfreq.py ${bam[0]} $input $task.cpus ${sample}_${input.baseName.replaceAll('codfreq_gff_', '')}.codfreq
     """
 }
 
