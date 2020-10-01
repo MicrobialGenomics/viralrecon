@@ -9,7 +9,7 @@
 1. Adapter trimming with [`Trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic)
 2. Codon Frequency with [`CodFrq`](https://github.com/hivdb/codfreq)
 
-# ![nf-core/viralrecon](docs/images/nf-core-viralrecon_logo.png)
+## ![nf-core/viralrecon](docs/images/nf-core-viralrecon_logo.png)
 
 [![GitHub Actions CI Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/viralrecon/actions)
 [![GitHub Actions Linting Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/viralrecon/actions)

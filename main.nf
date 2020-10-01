@@ -1134,7 +1134,8 @@ if (params.skip_markduplicates) {
                 ch_markdup_bam_varscan2_consensus
                 ch_markdup_bam_bcftools
                 ch_markdup_bam_bcftools_consensus
-                ch_markdup_bam_codfreq }
+                ch_markdup_bam_codfreq
+                ch_markdup_bam_custom_consensus }
     ch_markdup_bam_flagstat_mqc = Channel.empty()
     ch_markdup_bam_metrics_mqc = Channel.empty()
 } else {
