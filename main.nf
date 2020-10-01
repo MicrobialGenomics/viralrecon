@@ -2054,7 +2054,7 @@ process PREPRO_CODFREQ_GFF {
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
-    !skip_codfreq && !skip_variants && params.gff
+    (!params.skip_codfreq) && (!params.skip_variants) && params.gff
 
     input:
     path gff from ch_gff
@@ -2073,11 +2073,11 @@ process PREPRO_CODFREQ_GFF {
  */
 process CODFREQ {
     tag "$sample"
-    label 'process_high'
+    label 'process_low'
     publishDir "${params.outdir}/variants/codfreq", mode: params.publish_dir_mode
 
     when:
-    !skip_codfreq && !skip_variants && params.gff
+    (!params.skip_codfreq) && (!params.skip_variants) && params.gff
 
     input:
     tuple val(sample), val(single_end), path(bam) from ch_markdup_bam_codfreq

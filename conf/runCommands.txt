@@ -10,7 +10,9 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --in
 
 ### Run two samples in Docker, locally, with genome name
 nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples.csv \
- --genome "NC_045512.2" --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly -profile docker
+ --genome "NC_045512.2" --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly true -profile docker
+
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --skip_assembly true -profile testMarc,docker
 
 
 ### Run two samples in AWS Batch
