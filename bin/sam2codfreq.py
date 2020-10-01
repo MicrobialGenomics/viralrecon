@@ -22,7 +22,7 @@ OVERALL_QUALITY_CUTOFF = int(os.environ.get('OVERALL_QUALITY_CUTOFF', 25))
 LENGTH_CUTOFF = int(os.environ.get('LENGTH_CUTOFF', 50))
 SITE_QUALITY_CUTOFF = int(os.environ.get('SITE_QUALITY_CUTOFF', 25))
 
-NUM_PROCESSES = int(os.environ.get('NTHREADS', 2))
+NUM_PROCESSES = int(os.environ.get('NTHREADS', int(sys.argv[3])))
 INPUT_QUEUE = Queue(NUM_PROCESSES)
 OUTPUT_QUEUE = Queue()
 
@@ -114,12 +114,12 @@ def reads_producer(filename, offset):
 
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: {} <SAMFILE> <GFF_FILE> <OUTPUT>".format(sys.argv[0]),
+    if len(sys.argv) != 5:
+        print("Usage: {} <SAMFILE> <GFF_FILE> <CORES> <OUTPUT>".format(sys.argv[0]),
               file=sys.stderr)
         exit(1)
     with pysam.AlignmentFile(sys.argv[1], 'rb') as samfile:
-        totalreads = samfile.count(until_eof=True)
+        totalreads = samfile.count(until_eof=False)
     offset = 0
     while offset < totalreads:
         producer = Process(target=reads_producer, args=(sys.argv[1], offset))
@@ -136,6 +136,7 @@ def main():
     num_finished = 0
     num_tooshort = 0
     num_lowqual = 0
+    
     while num_finished < totalreads:
         out_chunk = OUTPUT_QUEUE.get()
         for results, err in out_chunk:
@@ -148,7 +149,7 @@ def main():
                 for cdpos, codon in results:
                     codonfreqs[cdpos][codon] += 1
 
-    with open(sys.argv[3], 'w') as out:
+    with open(sys.argv[4], 'w') as out:
         writer = csv.writer(out, delimiter='\t')
         for cdpos, counter in sorted(codonfreqs.items()):
             for gene, start, end in GENE_AA_RANGE:
@@ -164,7 +165,7 @@ def main():
     print('{} reads processed. Of them:'.format(num_finished))
     print('  Length of {} were too short'.format(num_tooshort))
     print('  Quality of {} were too low'.format(num_lowqual))
-    print("{} done.".format(sys.argv[3]))
+    print("{} done.".format(sys.argv[4]))
 
 
 if __name__ == '__main__':
