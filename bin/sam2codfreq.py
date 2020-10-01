@@ -136,8 +136,8 @@ def main():
     num_finished = 0
     num_tooshort = 0
     num_lowqual = 0
-    out_chunk = OUTPUT_QUEUE.get()
     while num_finished < totalreads:
+        out_chunk = OUTPUT_QUEUE.get()
         for results, err in out_chunk:
             num_finished += 1
             if err & ERR_TOO_SHORT:
