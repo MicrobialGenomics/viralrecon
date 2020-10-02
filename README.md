@@ -1,4 +1,4 @@
-# MicrobialGenomics/viralrecon 
+# MicrobialGenomics/viralrecon
 
 ## Forked from [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
 
@@ -46,7 +46,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
         * Variant annotation ([`SnpEff`](http://snpeff.sourceforge.net/SnpEff.html), [`SnpSift`](http://snpeff.sourceforge.net/SnpSift.html))
         * Consensus assessment report ([`QUAST`](http://quast.sourceforge.net/quast))
     8. Intersect variants across callers ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html))
-    9. Custom consensus ([consensusSequence_v2.py](bin/consensusSequence_v2.py))
+    9. Custom consensus ([`consensusSequence_v2.py`](bin/consensusSequence_v2.py))
     10. Codon frequency calling ([`codfrq`](https://github.com/hivdb/codfreq))
 6. _De novo_ assembly
     1. Primer trimming ([`Cutadapt`](https://cutadapt.readthedocs.io/en/stable/guide.html); *amplicon data only*)

@@ -351,7 +351,7 @@ By default, trimmed FastQ files will not be saved to the results directory. Spec
 
 Our adaptation of the pipeline trimm adapters with trimmomatic. However you can use fasp for adapter trimming whit this flag (Defauls: false).
 
-## Read trimming trimmomatic 
+## Read trimming trimmomatic
 
 ### `--leading`
 
