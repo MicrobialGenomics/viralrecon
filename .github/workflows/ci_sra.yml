@@ -12,7 +12,7 @@ on:
 jobs:
   test_sra:
     name: Test SRA workflow
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralrecon') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'MicrobialGenomics/viralrecon') }}
     runs-on: ubuntu-latest
     env:
       NXF_VER: '19.10.0'
