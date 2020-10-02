@@ -6,22 +6,14 @@
 [![GitHub Actions CI Status Metagen Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20metagenomics/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![Actions Status](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 
+[![Docker](https://img.shields.io/docker/automated/microbialgenomics/viralrecon.svg)](https://hub.docker.com/r/microbialgenomics/viralrecon)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
+
 ## Pipeline additions
 
 1. Adapter trimming with [`Trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic)
 2. Codon Frequency with [`CodFrq`](https://github.com/hivdb/codfreq)
 3. Custom consensus with [`consensusSequence_v2.py`](bin/consensusSequence_v2.py)
-
-## ![nf-core/viralrecon](docs/images/nf-core-viralrecon_logo.png)
-
-[![GitHub Actions CI Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/viralrecon/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/viralrecon/actions)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3901628.svg)](https://doi.org/10.5281/zenodo.3901628)
-
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
-[![Docker](https://img.shields.io/docker/automated/nfcore/viralrecon.svg)](https://hub.docker.com/r/nfcore/viralrecon)
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralrecon-4A154B?logo=slack)](https://nfcore.slack.com/channels/viralrecon)
 
 ## Introduction
 
