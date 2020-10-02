@@ -1,4 +1,4 @@
-# nf-core/viralrecon: Usage
+# MicrobialGenomics/viralrecon: Usage
 
 ## Table of contents
 
@@ -21,7 +21,7 @@
     * [`--fasta`](#--fasta)
     * [`--gff`](#--gff)
     * [`--save_reference`](#--save_reference)
-* [Read trimming](#read-trimming)
+* [Read trimming fastp](#read-trimming-fastp)
     * [`--cut_mean_quality`](#--cut_mean_quality)
     * [`--qualified_quality_phred`](#--qualified_quality_phred)
     * [`--unqualified_percent_limit`](#--unqualified_percent_limit)
@@ -29,6 +29,17 @@
     * [`--skip_adapter_trimming`](#--skip_adapter_trimming)
     * [`--skip_amplicon_trimming`](#--skip_amplicon_trimming)
     * [`--save_trimmed`](#--save_trimmed)
+    * [`--fastp`](#--fastp)
+* [Read trimming trimmomatic](#read-trimming-trimmomatic)
+    * [`--leading`](#--leading)
+    * [`--trailing`](#--trailing)
+    * [`--minlen`](#--minlen)
+    * [`--sliding_window`](#--sliding_window)
+    * [`--sliding_window_quality`](#--sliding_window_quality)
+    * [`--illclip_misamtch`](#--illclip_misamtch)
+    * [`--illclip_pal_thres`](#--illclip_pal_thres)
+    * [`--illclip_simple_thres`](#--illclip_simple_thres)
+    * [`--adapter_type`](#--adapter_type)
 * [Kraken 2](#kraken-2)
     * [`--kraken2_db`](#--kraken2_db)
     * [`--kraken2_db_name`](#--kraken2_db_name)
@@ -60,6 +71,8 @@
     * [`--skip_snpeff`](#--skip_snpeff)
     * [`--skip_variants_quast`](#--skip_variants_quast)
     * [`--skip_variants`](#--skip_variants)
+    * [`--skip_codfreq`](#--skip_codfreq)
+    * [`--custom_consensus_thres`](#--custom_consensus_thres)
 * [De novo assembly](#de-novo-assembly)
     * [`--assemblers`](#--assemblers)
     * [`--minia_kmer`](#--minia_kmer)
@@ -111,7 +124,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/viralrecon --input samplesheet.csv --genome 'MN908947.3' -profile docker
+nextflow run MicrobialGenomics/viralrecon --input samplesheet.csv --genome 'MN908947.3' -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -130,14 +143,14 @@ results         # Finished results (configurable, see below)
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
-nextflow pull nf-core/viralrecon
+nextflow pull MicrobialGenomics/viralrecon
 ```
 
 ### Reproducibility
 
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [nf-core/viralrecon releases page](https://github.com/nf-core/viralrecon/releases) and find the latest version number - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`.
+First, go to the [MicrobialGenomics/viralrecon releases page](https://github.com/MicrobialGenomics/viralrecon/releases) and find the latest version number - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future.
 
@@ -147,11 +160,9 @@ This version number will be logged in reports when you run the pipeline, so that
 
 Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
 
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Conda) - see below.
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Conda) - see below.
 
-> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
-
-The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to see if your system is available in these configs please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
+> We highly recommend the use of Docker containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
 
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
@@ -161,9 +172,6 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 * `docker`
     * A generic configuration profile to be used with [Docker](http://docker.com/)
     * Pulls software from dockerhub: [`nfcore/viralrecon`](http://hub.docker.com/r/nfcore/viralrecon/)
-* `singularity`
-    * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
-    * Pulls software from DockerHub: [`nfcore/viralrecon`](http://hub.docker.com/r/nfcore/viralrecon/)
 * `conda`
     * Please only use Conda as a last resort i.e. when it is not possible to run the pipeline with Docker or Singularity.
     * A generic configuration profile to be used with [Conda](https://conda.io/docs/)
@@ -309,7 +317,7 @@ Full path to viral [GFF](http://www.gmod.org/wiki/GFF3) annotation file (Default
 
 If the Bowtie2 index is generated by the pipeline use this parameter to save it to your results folder. These can then be used for future pipeline runs, reducing processing times (Default: false).
 
-## Read trimming
+## Read trimming fastp
 
 ### `--cut_mean_quality`
 
@@ -338,6 +346,48 @@ Skip the amplicon trimming step performed by Cutadapt. Use this if your input Fa
 ### `--save_trimmed`
 
 By default, trimmed FastQ files will not be saved to the results directory. Specify this flag (or set to true in your config file) to copy these files to the results directory when complete (Default: false).
+
+### `--fastp`
+
+Our adaptation of the pipeline trimm adapters with trimmomatic. However you can use fasp for adapter trimming whit this flag (Defauls: false).
+
+## Read trimming trimmomatic 
+
+### `--leading`
+
+Cut bases off the start of a read, if below a threshold quality (Default: 30)
+
+### `--trailing`
+
+Cut bases off the end of a read, if below a threshold quality (Default: 30)
+
+### `--minlen`
+
+Drop the read if it is below a specified length (Default: 75)
+
+### `--sliding_window`
+
+Perform a sliding window trimming, cutting once the average quality within the window falls below a threshold (Default: 30)
+
+### `--sliding_window_quality`
+
+Average quality for sliding window trimming (Default: 20)
+
+### `--illclip_misamtch`
+
+Specifies the maximum mismatch count which will still allow a full match to be performed (Default: 2)
+
+### `--illclip_pal_thres`
+
+Specifies how accurate the match between the two 'adapter ligated' reads must be for PE palindrome read alignment (Default: 30)
+
+### `--illclip_simple_thres`
+
+Specifies how accurate the match between any adapter etc. sequence must be against a read (Default: 10)
+
+### `--adapter_type`
+
+Specifies adapters used (Default: Nextera) (Options: Nextera, TruSeq2, TruSeq3)
 
 ## Kraken 2
 
@@ -458,6 +508,14 @@ Skip generation of QUAST aggregated report for consensus sequences (Default: fal
 ### `--skip_variants`
 
 Specify this parameter to skip all of the variant calling and mapping steps in the pipeline (Default: false).
+
+### `--skip_codfreq`
+
+Skip codon usage calling steps in the pipeline (Default: false)
+
+### `--custom_consensus_thres`
+
+Minimum base frequency on custom consensus (Default: 0.15)
 
 ## De novo assembly
 
