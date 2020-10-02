@@ -8,6 +8,7 @@ on:
   pull_request:
   release:
     types: [published]
+
 jobs:
   test_sra:
     name: Test SRA workflow
@@ -29,7 +30,6 @@ jobs:
           PREFIX_FILTER: |
             Dockerfile
             environment.yml
-
       - name: Build new docker image
         if: env.GIT_DIFF
         run: docker build --no-cache . -t microbialgenomics/viralrecon:1.0
@@ -37,14 +37,12 @@ jobs:
       - name: Pull docker image
         if: ${{ !env.GIT_DIFF }}
         run: |
-            docker pull microbialgenomics/viralrecon:dev
-            docker tag microbialgenomics/viralrecon:dev microbialgenomics/viralrecon:1.0
-
+          docker pull microbialgenomics/viralrecon:dev
+          docker tag microbialgenomics/viralrecon:dev microbialgenomics/viralrecon:1.0
       - name: Install Nextflow
         run: |
-            wget -qO- get.nextflow.io | bash
-            sudo mv nextflow /usr/local/bin/
-
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
       - name: Run pipeline with minimal data via SRA ids and various options
         run: |
-            nextflow run ${GITHUB_WORKSPACE} -profile test_sra,docker ${{ matrix.parameters }}
+          nextflow run ${GITHUB_WORKSPACE} -profile test_sra,docker ${{ matrix.parameters }}

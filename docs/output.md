@@ -1,6 +1,6 @@
-# ![nf-core/viralrecon](images/nf-core-viralrecon_logo.png)
+# ![MicrobialGenomics/viralrecon](images/nf-core-viralrecon_logo.png)
 
-This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline. Please click [here](https://raw.githack.com/nf-core/viralrecon/master/docs/html/multiqc_report.html) to see an example MultiQC report generated using the parameters defined in [this configuration file](https://github.com/nf-core/viralrecon/blob/master/conf/test_full.config) to run the pipeline on [samples](https://zenodo.org/record/3735111) which were prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
+This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline. Please click [here](https://raw.githack.com/MicrobialGenomics/viralrecon/master/docs/html/multiqc_report.html) to see an example MultiQC report generated using the parameters defined in [this configuration file](https://github.com/MicrobialGenomics/viralrecon/blob/master/conf/test_full.config) to run the pipeline on [samples](https://zenodo.org/record/3735111) which were prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
@@ -12,7 +12,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * [parallel-fastq-dump](#parallel-fastq-dump) - Download samples from SRA
     * [cat](#cat) - Merge re-sequenced FastQ files
     * [FastQC](#fastqc) - Raw read QC
-    * [fastp](#fastp) - Adapter and quality trimming
+    * [fastp](#fastp) - Adapter and quality trimming with fastp
+    * [trimmomatic](#trimmomatic) - Adapter and quality trimming with trimmomatic
 * [Variant calling](#variant-calling)
     * [Bowtie 2](#bowtie-2) - Read alignment relative to reference genome
     * [SAMtools](#samtools) - Sort, index and generate metrics for alignments
@@ -24,6 +25,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
         * [SnpEff and SnpSift](#snpeff-and-snpsift) - Genetic variant annotation and functional effect prediction
         * [QUAST](#quast) - Consensus assessment report
     * [BCFTools isec](#bcftools-isec) - Intersect variants across all callers
+    * [Custom Consensus](#custom-consensus) - Consensus sequence generation with oun pipeline
+    * [Codon frquency](#codfreq) - Codon frequency usage per samble
+
 * [De novo assembly](#de-novo-assembly)
     * [Cutadapt](#cutadapt) - Primer trimming for amplicon data
     * [Kraken 2](#kraken-2) - Removal of host reads
@@ -43,7 +47,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 ### parallel-fastq-dump
 
-Please see the [usage docs](https://github.com/nf-core/viralrecon/blob/master/docs/usage.md#supported-public-repository-ids) for a list of supported public repository identifiers and how to provide them to the pipeline. The final sample information for all identifiers is obtained from the ENA which provides direct download links for FastQ files as well as their associated md5sums. If a download link exists, the files will be downloaded by FTP otherwise they will be downloaded using [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump).
+Please see the [usage docs](https://github.com/MicrobialGenomics/viralrecon/blob/master/docs/usage.md#supported-public-repository-ids) for a list of supported public repository identifiers and how to provide them to the pipeline. The final sample information for all identifiers is obtained from the ENA which provides direct download links for FastQ files as well as their associated md5sums. If a download link exists, the files will be downloaded by FTP otherwise they will be downloaded using [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump).
 
 <details markdown="1">
   <summary>Output files</summary>
@@ -62,7 +66,7 @@ Please see the [usage docs](https://github.com/nf-core/viralrecon/blob/master/do
 
 ### cat
 
-If multiple libraries/runs have been provided for the same sample in the input samplesheet (e.g. to increase sequencing depth) then these will be merged at the very beginning of the pipeline in order to have consistent sample naming throughout the pipeline. Please refer to the [usage docs](https://github.com/nf-core/viralrecon/blob/dev/docs/usage.md#format) to see how to specify these samples in the input samplesheet.
+If multiple libraries/runs have been provided for the same sample in the input samplesheet (e.g. to increase sequencing depth) then these will be merged at the very beginning of the pipeline in order to have consistent sample naming throughout the pipeline. Please refer to the [usage docs](https://github.com/MicrobialGenomics/viralrecon/blob/dev/docs/usage.md#format) to see how to specify these samples in the input samplesheet.
 
 ### FastQC
 
@@ -106,6 +110,26 @@ If multiple libraries/runs have been provided for the same sample in the input s
 </details>
 
 ![MultiQC - fastp filtered reads plot](images/mqc_fastp_plot.png)
+
+### trimmomatic
+
+[`Trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic) a flexible trimmer for Illumina Sequence Data.
+
+<details markdown="1">
+  <summary>Output files</summary>
+
+* `preprocess/trimmomatic/`
+    * `*.trimmomatic.html`: Trimming report in html format.
+    * `*.trim.fastq.gz`: Paired-end/single-end trimmed reads.
+    * `*.trim.fail.gz`: Unpaired trimmed reads (only for paired-end data).  
+* `preprocess/trimmomatic/log/`
+    * `*.trimmomatic.log`: Trimming log file.
+* `preprocess/trimmomatic/fastqc/`:
+    * `*.trim_fastqc.html`: FastQC report of the trimmed reads.
+* `preprocess/trimmomatic/fastqc/zips/`
+    * `*.trim_fastqc.zip`: Zip archive containing the FastQC report.
+
+> **NB:** Post-trimmed FastQ files will only be saved in the results directory if the `--save_trimmed` parameter is supplied.
 
 ## Variant calling
 
@@ -642,11 +666,11 @@ We used a Kraken 2 database in this workflow to filter out reads specific to the
 
 Results generated by MultiQC collate pipeline QC from FastQC, fastp, Cutadapt, Bowtie 2, Kraken 2, VarScan 2, iVar, samtools flagstat, samtools idxstats, samtools stats, picard CollectMultipleMetrics and CollectWgsMetrics, BCFTools, SnpEff and QUAST.
 
-The default [`multiqc config file`](https://github.com/nf-core/viralrecon/blob/master/assets/multiqc_config.yaml) has been written in a way in which to structure these QC metrics to make them more interpretable in the final report.
+The default [`multiqc config file`](https://github.com/MicrobialGenomics/viralrecon/blob/master/assets/multiqc_config.yaml) has been written in a way in which to structure these QC metrics to make them more interpretable in the final report.
 
 The pipeline has special steps which also allow the software versions to be reported in the MultiQC output for future traceability. For more information about how to use MultiQC reports, see <http://multiqc.info>.
 
-Please click [here](https://raw.githack.com/nf-core/viralrecon/master/docs/html/multiqc_report.html) to see an example MultiQC report generated using the parameters defined in [this configuration file](https://github.com/nf-core/viralrecon/blob/master/conf/test_full.config) to run the pipeline on [samples](https://zenodo.org/record/3735111) which were prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
+Please click [here](https://raw.githack.com/MicrobialGenomics/viralrecon/master/docs/html/multiqc_report.html) to see an example MultiQC report generated using the parameters defined in [this configuration file](https://github.com/MicrobialGenomics/viralrecon/blob/master/conf/test_full.config) to run the pipeline on [samples](https://zenodo.org/record/3735111) which were prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
 
 <details markdown="1">
   <summary>Output files</summary>
