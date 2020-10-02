@@ -1,0 +1,32 @@
+
+### Run two samples in Docker, locally, with manual fasta
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples.csv -w /tmp/work \
+ --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly -profile docker
+
+
+### Run two samples in Docker, locally, with manual fasta and GFF file
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples.csv -w /tmp/work \
+ --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly -profile docker
+
+### Run two samples in Docker, locally, with genome name
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples.csv \
+ --genome "NC_045512.2" --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly true -profile docker
+
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --skip_assembly true -profile testMarc,docker
+
+
+### Run two samples in AWS Batch
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples_s3.csv \
+    --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
+    --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly --awsqueue NextFlow_Queue_1 -w s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/work/ -bucket-dir s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/bucket \
+    --outdir s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/outdir --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly -profile awsbatch 
+
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples_s3.csv \
+    --genome "NC_045512.2" \
+    --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly --awsqueue NextFlow_Queue_1 -w s3://microbialgenomics-scratch/ -bucket-dir s3://microbialgenomics-scratch \
+    --outdir s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/outdir --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --skip_assembly -profile awsbatch 
+
+    nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples_s3.csv  --awsqueue NextFlow_Queue_1 -w s3://microbialgenomics-scratch/ -bucket-dir s3://microbialgenomics-scratch --outdir s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/outdir --genome "NC_045512.2" --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed  -profile awsbatch -resume 
+
+
+    nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf  --input /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Run7_Sep2020/ARTIC/RawData/sampleSheet_2samples_s3.csv  --genome "NC_045512.2" --amplicon_bed  /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed --awsqueue NextFlow_Queue_1 -w s3://microbialgenomics-scratch/ -bucket-dir s3://microbialgenomics-scratch --outdir s3://mnoguera-newbucket/Work/Projects/Coronavirus_2020/Run7_Sep2020/ARTIC/outdir --skip_assembly -profile awsbatch --filter_unmapped -resume

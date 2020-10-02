@@ -1,25 +1,19 @@
-**MicrobialGenomics/viralrecon forked from** [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
+# MicrobialGenomics/viralrecon
+
+## Forked from [nf-core/viralrecon](https://github.com/nf-core/viralrecon)
 
 [![GitHub Actions CI Status Amplicon Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20amplicon/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![GitHub Actions CI Status Metagen Protocol](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20CI%20metagenomics/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 [![Actions Status](https://github.com/MicrobialGenomics/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/MicrobialGenomics/viralrecon/actions)
 
+[![Docker](https://img.shields.io/docker/automated/microbialgenomics/viralrecon.svg)](https://hub.docker.com/r/microbialgenomics/viralrecon)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
 
-## Pipeline additions:
+## Pipeline additions
 
 1. Adapter trimming with [`Trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic)
 2. Codon Frequency with [`CodFrq`](https://github.com/hivdb/codfreq)
-
-# ![nf-core/viralrecon](docs/images/nf-core-viralrecon_logo.png)
-
-[![GitHub Actions CI Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/viralrecon/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/viralrecon/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/viralrecon/actions)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3901628.svg)](https://doi.org/10.5281/zenodo.3901628)
-
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
-[![Docker](https://img.shields.io/docker/automated/nfcore/viralrecon.svg)](https://hub.docker.com/r/nfcore/viralrecon)
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralrecon-4A154B?logo=slack)](https://nfcore.slack.com/channels/viralrecon)
+3. Custom consensus with [`consensusSequence_v2.py`](bin/consensusSequence_v2.py)
 
 ## Introduction
 
@@ -32,7 +26,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 1. Download samples via SRA, ENA or GEO ids ([`ENA FTP`](https://ena-docs.readthedocs.io/en/latest/retrieval/file-download.html), [`parallel-fastq-dump`](https://github.com/rvalieris/parallel-fastq-dump); *if required*)
 2. Merge re-sequenced FastQ files ([`cat`](http://www.linfo.org/cat.html); *if required*)
 3. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-4. Adapter trimming ([`fastp`](https://github.com/OpenGene/fastp))
+4. Adapter trimming ([`fastp`](https://github.com/OpenGene/fastp) or [`trimmomatic`](http://www.usadellab.org/cms/index.php?page=trimmomatic))
 5. Variant calling
     1. Read alignment ([`Bowtie 2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
     2. Sort and index alignments ([`SAMtools`](https://sourceforge.net/projects/samtools/files/samtools/))
@@ -44,6 +38,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
         * Variant annotation ([`SnpEff`](http://snpeff.sourceforge.net/SnpEff.html), [`SnpSift`](http://snpeff.sourceforge.net/SnpSift.html))
         * Consensus assessment report ([`QUAST`](http://quast.sourceforge.net/quast))
     8. Intersect variants across callers ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html))
+    9. Custom consensus ([`consensusSequence_v2.py`](bin/consensusSequence_v2.py))
+    10. Codon frequency calling ([`codfrq`](https://github.com/hivdb/codfreq))
 6. _De novo_ assembly
     1. Primer trimming ([`Cutadapt`](https://cutadapt.readthedocs.io/en/stable/guide.html); *amplicon data only*)
     2. Removal of host reads ([`Kraken 2`](http://ccb.jhu.edu/software/kraken2/))
@@ -62,50 +58,48 @@ See the [usage docs](docs/usage.md) for all of the available options when runnin
 
 ## Pipeline reporting
 
-Numerous QC and reporting steps are included in the pipeline in order to collate a full summary of the analysis within a single [MultiQC](https://multiqc.info/) report. You can see [an example MultiQC report here](https://raw.githack.com/nf-core/viralrecon/master/docs/html/multiqc_report.html), generated using the parameters defined in [this configuration file](https://github.com/nf-core/viralrecon/blob/master/conf/test_full.config). The pipeline was run with [these samples](https://zenodo.org/record/3735111), prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
+Numerous QC and reporting steps are included in the pipeline in order to collate a full summary of the analysis within a single [MultiQC](https://multiqc.info/) report. You can see [an example MultiQC report here](https://raw.githack.com/MicrobialGenomics/viralrecon/master/docs/html/multiqc_report.html), generated using the parameters defined in [this configuration file](https://github.com/nf-core/viralrecon/blob/master/conf/test_full.config). The pipeline was run with [these samples](https://zenodo.org/record/3735111), prepared from the [ncov-2019 ARTIC Network V1 amplicon set](https://artic.network/ncov-2019) and sequenced on the Illumina MiSeq platform in 301bp paired-end format.
 
 ## Quick Start
 
 1. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-2. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
+2. Install [`Docker`](https://docs.docker.com/engine/installation/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
     ```bash
-    nextflow run nf-core/viralrecon -profile test,<docker/singularity/conda/institute>
+    nextflow run MicrobialGenomics/viralrecon -profile test,<docker/conda>
     ```
-
-    > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
 
 4. Start running your own analysis!
 
     * Typical command for shotgun analysis:
 
         ```bash
-        nextflow run nf-core/viralrecon \
+        nextflow run  MicrobialGenomics/viralrecon \
             --input samplesheet.csv \
             --genome 'MN908947.3' \
-            -profile <docker/singularity/conda/institute>
+            -profile <docker/conda>
         ```
 
     * Typical command for amplicon analysis:
 
         ```bash
-        nextflow run nf-core/viralrecon \
+        nextflow run  MicrobialGenomics/viralrecon \
             --input samplesheet.csv \
             --genome 'MN908947.3' \
             --protocol amplicon \
             --amplicon_bed ./nCoV-2019.artic.V3.bed \
             --skip_assembly \
-            -profile <docker/singularity/conda/institute>
+            -profile <docker/conda>
         ```
 
 See the [usage documentation](docs/usage.md) for all of the available options when running the pipeline.
 
 ## Documentation
 
-The nf-core/viralrecon pipeline comes with documentation about the pipeline, found in the `docs/` directory:
+The  MicrobialGenomics/viralrecon pipeline comes with documentation about the pipeline, found in the `docs/` directory:
 
 1. [Installation](https://nf-co.re/usage/installation)
 2. Pipeline configuration
@@ -115,58 +109,3 @@ The nf-core/viralrecon pipeline comes with documentation about the pipeline, fou
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
-
-## Credits
-
-These scripts were originally written by [Sarai Varona](https://github.com/svarona), [Miguel Juliá](https://github.com/MiguelJulia) and [Sara Monzon](https://github.com/saramonzon) from [BU-ISCIII](https://github.com/BU-ISCIII) and co-ordinated by Isabel Cuesta for the [Institute of Health Carlos III](https://eng.isciii.es/eng.isciii.es/Paginas/Inicio.html), Spain. Through collaboration with the nf-core community the pipeline has now been updated substantially to include additional processing steps, to standardise inputs/outputs and to improve pipeline reporting; implemented primarily by [Harshil Patel](https://github.com/drpatelh) from [The Bioinformatics & Biostatistics Group](https://www.crick.ac.uk/research/science-technology-platforms/bioinformatics-and-biostatistics/) at [The Francis Crick Institute](https://www.crick.ac.uk/), London.
-
-Many thanks to others who have helped out and contributed along the way too, including (but not limited to)\*:
-
-| Name                                                      | Affiliation                                                                           |
-|-----------------------------------------------------------|---------------------------------------------------------------------------------------|
-| [Aengus Stewart](https://github.com/stewarta)             | [The Francis Crick Institute, UK](https://www.crick.ac.uk/)                           |
-| [Alexander Peltzer](https://github.com/apeltzer)          | [Boehringer Ingelheim, Germany](https://www.boehringer-ingelheim.de/)                 |
-| [Alison Meynert](https://github.com/ameynert)             | [University of Edinburgh, Scotland](https://www.ed.ac.uk/)                            |
-| [Anton Korobeynikov](https://github.com/asl)              | [Saint Petersburg State University, Russia](https://english.spbu.ru/)                 |
-| [Artem Babaian](https://github.com/ababaian)              | [University of British Columbia, Canada](https://www.ubc.ca/)                         |
-| [Dmitry Meleshko](https://github.com/1dayac)              | [Saint Petersburg State University, Russia](https://english.spbu.ru/)                 |
-| [Edgar Garriga Nogales](https://github.com/edgano)        | [Centre for Genomic Regulation, Spain](https://www.crg.eu/)                           |
-| [Erik Garrison](https://github.com/ekg)                   | [UCSC, USA](https://www.ucsc.edu/)                                                    |
-| [Gisela Gabernet](https://github.com/ggabernet)           | [QBiC, University of Tübingen, Germany](https://portal.qbic.uni-tuebingen.de/portal/) |
-| [Joao Curado](https://github.com/jcurado-flomics)         | [Flomics Biotech, Spain](https://www.flomics.com/)                                    |
-| [Jerome Nicod](https://github.com/Jeromics)               | [The Francis Crick Institute, UK](https://www.crick.ac.uk)                            |
-| [Jose Espinosa-Carrasco](https://github.com/JoseEspinosa) | [Centre for Genomic Regulation, Spain](https://www.crg.eu/)                           |
-| [Katrin Sameith](https://github.com/ktrns)                | [DRESDEN-concept Genome Center, Germany](https://genomecenter.tu-dresden.de)          |
-| [Lluc Cabus](https://github.com/lcabus-flomics)           | [Flomics Biotech, Spain](https://www.flomics.com/)                                    |
-| [Marta Pozuelo](https://github.com/mpozuelo-flomics)      | [Flomics Biotech, Spain](https://www.flomics.com/)                                    |
-| [Maxime Garcia](https://github.com/MaxUlysse)             | [SciLifeLab, Sweden](https://www.scilifelab.se/)                                      |
-| [Michael Heuer](https://github.com/heuermh)               | [UC Berkeley, USA](https://https://rise.cs.berkeley.edu)                              |
-| [Phil Ewels](https://github.com/ewels)                    | [SciLifeLab, Sweden](https://www.scilifelab.se/)                                      |
-| [Richard Mitter](https://github.com/rjmitter)             | [The Francis Crick Institute, UK](https://www.crick.ac.uk/)                           |
-| [Robert Goldstone](https://github.com/rjgoldstone)        | [The Francis Crick Institute, UK](https://www.crick.ac.uk/)                           |
-| [Simon Heumos](https://github.com/subwaystation)          | [QBiC, University of Tübingen, Germany](https://portal.qbic.uni-tuebingen.de/portal/) |
-| [Stephen Kelly](https://github.com/stevekm)               | [Memorial Sloan Kettering Cancer Center, USA](https://www.mskcc.org/)                 |
-| [Thanh Le Viet](https://github.com/thanhleviet)           | [Quadram Institute, UK](https://quadram.ac.uk/)                                       |
-
-> \* Listed in alphabetical order
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](https://github.com/nf-core/viralrecon/blob/master/.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on [Slack `#viralrecon` channel](https://nfcore.slack.com/channels/viralrecon) (you can join with [this invite](https://nf-co.re/join/slack)).
-
-## Citation
-
-If you use nf-core/viralrecon for your analysis, please cite it using the following doi: [10.5281/zenodo.3901628](https://doi.org/10.5281/zenodo.3901628)
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](https://github.com/nf-core/viralrecon/blob/master/CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
-> ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
