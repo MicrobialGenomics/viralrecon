@@ -6,4 +6,5 @@ results/
 tests/
 testing/
 *.pyc
+basespace/
 
