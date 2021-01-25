@@ -45,34 +45,40 @@ aws s3 cp --recursive ${NFOutDir}results /tmp/results
 ### results/variants/bam/picard_metrics/*coverage_metrics  --> coverage
 # samtools  depth results/variants/bam/*.mkD.sorted.bam | awk '{sum+=$3} END { print "Average = ",sum/NR}' > ${sample}_depthOfCoverage.txt
 
+rm /tmp/NFResults.csv
+echo "library_id,InstrumentID,FlowcellID,s3FastqR1,s3FastqR2,s3BamFile,s3CovFile,RawDataSeqs,CovidSeqs,FastqSequence,PercCov,DepthOfCov,s3FastaFile" > /tmp/NFResults.csv
 for line in `cat $NFSamplesFile | tail -n +2`
 do
-    echo $line
+   # echo $line
+   instrumentID=`samtools view /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $1}'`
+   flowcellID=`samtools view /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $3}'`
     sampleName=`echo $line | awk 'BEGIN{FS=","}{print $1}'`
-    echo "sampleName is $sampleName"
+  # echo "sampleName is $sampleName"
     s3FastqR1=`echo $line | awk 'BEGIN{FS=","}{print $2}'`
     s3FastqR2=`echo $line | awk 'BEGIN{FS=","}{print $3}'`
-    echo "s3 Files are $s3FastqR1 and $s3FastqR2"
+   # echo "s3 Files are $s3FastqR1 and $s3FastqR2"
     s3BamFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.bam
-    echo "s3 Bam File is $s3BamFile"
+   # echo "s3 Bam File is $s3BamFile"
     s3FastaFile=${NFOutDir}results/variants/bcftools/consensus/${sampleName}.consensus.masked.fa
-    echo "s3 consensus File is $s3FastaFile"
+  #  echo "s3 consensus File is $s3FastaFile"
     samtools depth /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
     aws s3 cp /tmp/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
     s3CovFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
-    echo "s3 Coverage file is $s3CovFile"
+   # echo "s3 Coverage file is $s3CovFile"
     RawDataSeqs=`samtools view /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
-    echo "File has $RawDataSeqs raw sequences"
+   # echo "File has $RawDataSeqs raw sequences"
     CovidSeqs=`samtools view -F 4 /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
-    echo "File has $CovidSeqs covid sequences"
+   # echo "File has $CovidSeqs covid sequences"
     ConsensusSequence=`tail -n +2 /tmp/results/variants/bcftools/consensus/${sampleName}.consensus.masked.fa | tr -d '\n'`
-    
+    DepthOfCoverage=`samtools  depth /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | awk '{sum+=$3} END { print sum/NR}'`
     PercN=`tail -n 1 /tmp/results/variants/bcftools/consensus/base_qc/${sampleName}.base_counts.tsv | awk '{print $3}'`
-    PercCov=`expr 100 - $PercN`
-    echo "$PercCov of genome is covered"
-    #echo "${sampleName},${s3FastqR1},${s3FastqR2},${s3BamFile},${s3FastaFile},${s3CovFile},${RawDataSeqs},${CovidSeqs},${ConsensusSequence},${PercCov}\n"
+    #echo "$PercN of genome is N"
+    PercCov=`echo "(100-$PercN)" | bc -l`
+   # echo "$PercCov of genome is covered"
+    echo "${sampleName},${instrumentID},${flowcellID},${s3FastqR1},${s3FastqR2},${s3BamFile},${s3CovFile},${RawDataSeqs},${CovidSeqs},${ConsensusSequence},${PercCov},${DepthOfCoverage},${s3FastaFile}," >> /tmp/NFResults.csv
 done
 
+aws s3 cp /tmp/NFResults.csv ${NFOutDir}
 ### Ivar
 ### results/variants/consensus/*masked*fa    --> consensus sequence
 ### results/variants/consensus/base_qc/*base_counts.tsv   --> Sequence composition 
