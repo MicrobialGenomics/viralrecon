@@ -18,36 +18,34 @@
 s3Bucket="s3://***REMOVED***/"
 
 NFSamplesFile=$1
+NFOutDir=$2
 
 cd /tmp/
 
 git clone https://github.com/MicrobialGenomics/viralrecon.git
 
-nextflow run ./main.nf --input $NFSamplesFile \ 
-    --fasta ${s3Bucket}/NextFlow/Configs/NC_045512.2.fasta 
-    --amplicon_bed ${s3Bucket}/NextFlow/Configs/ArticPrimers_BediVar.bed 
-    --skip_assembly -profile docker --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 
-s3://***REMOVED***/NextFlow/Configs/
 
-    nextflow run ./main.nf  --input  s3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/IrsiCaixa_Covid-16S_NFSamples.csv  --fasta s3://***REMOVED***/NextFlow/Configs/NC_045512.2.fasta \
-     --amplicon_bed /tmp/ArticPrimers_BediVar.bed --skip_assembly -profile awsbatch --protocol metagenomic --outdir s3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/viralrecon\
-     --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 -work-dir work -bucket-dir s3://microbialgenomics-scratch/
-      
-      
-      /tmp/IrsiCaixa_Covid-16S_NFSamples.csv 
-      --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 --outdir s3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/viralrecon \
-        -w s3://microbialgenomics-scratch/work
--bucket-dir s3://microbialgenomics-scratch/ 
+### Try with modified version of viralrecon/Full Dataset
+### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
+### All config files for analysis are on s3://***REMOVED***/NextFlow/Configs/
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
+ --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
+ --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
+  -profile awsbatch --skip_assembly \
+ --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
+  -bucket-dir 's3://microbialgenomics-scratch/' \
+  -w 's3://microbialgenomics-scratch/' \
+ --outdir ${NFOutDir}results --with-tower \
+ --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20
 
-        nextflow run ./main.nf  --input  s3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/IrsiCaixa_Covid-16S_NFSamples.csv  \
-                    --fasta s3://***REMOVED***/NextFlow/Configs/NC_045512.2.fasta   \
-                       --amplicon_bed /tmp/ArticPrimers_BediVar.bed --skip_assembly \
-                       -profile awsbatch --protocol metagenomic --outdir s3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/viralrecon \ 
-                            --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 --workDir s3://microbialgenomics-scratch/work \
+### Manual Inspection of results
 
+### Contamination?
+### Coverage?
+### Number of reads(raw/filtered/aligned) 
+### Use kraken2 output to report contamination?
 
+### Scan results files to keep selected variables
+### Download to local
 
-
-nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input /tmp/IrsiCaixa_Covid-16S_NFSamples.csv \
---awsqueue NextFlow_Queue_1 -w 's3://microbialgenomics-scratch/' -bucket-dir 's3://microbialgenomics-scratch' --outdir 's3://***REMOVED***/Runs/IrsiCaixa_Covid-16S_208813606_2021-01-21/viralrecon' \
---genome NC_045512.2 --amplicon_bed /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed -profile awsbatch -resume
+aws s3 cp --recursive ${NFOutDir}results /tmp/results
