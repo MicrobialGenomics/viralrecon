@@ -34,7 +34,7 @@ fi
 
 ### Usually We'll have a passed argument containing a reference to a project
 name=$1 || echo "Project name not defined" 
-csvFile=$2 || echo "Metadata file not defined, will process all samples"
+samplesFile=$2 || echo "Metadata file not defined, will process all samples"
 ### Lists all projects to csv file, filtering by name
 ### redirect output to a filecan be useful to get project id
 bs list projects --filter-term=$name -f csv > /tmp/${name}_project.csv
@@ -61,21 +61,30 @@ for file in `find /tmp/$projectString -name *fastq.gz | grep _R1_`
 do
  fileR1=$file 
  fileR2=`echo $fileR1 | sed s/_R1_/_R2_/`
- ### Add extra filtering steps (is sample in the csv file)
+ ### Add extra filtering steps (is sample in the csv file?)
  ### What's the sample LibId (keep it)
  echo "copying $file to ${s3Location}RawData"
+ 
  filename=${file##*/}
  filenameR1=$filename
+ 
  filenameR2=`echo $filenameR1 | sed s/_R1_/_R2_/`
- samplename=${filename%%_S\d*}
- echo $samplename,${s3Location}RawData/${filenameR1},${s3Location}RawData/${filenameR1} | tee >> /tmp/${name}_NFSamples.csv
+ samplename=${filename%%_S*}
+ if  ! grep -Fxq "$samplename" $samplesFile
+then
+### We won't analyze samples that are not passed as argument.
+    echo "Sample $samplename not found in $samplesFile ... Skipping"
+    continue
+fi
+ echo $samplename,${s3Location}RawData/${filenameR1},${s3Location}RawData/${filenameR2} | tee >> /tmp/${name}_NFSamples.csv
  echo $filename $samplename
- aws s3 cp $file ${s3Location}RawData
+ aws s3 cp $fileR1 ${s3Location}RawData/
+ aws s3 cp $fileR2 ${s3Location}RawData/
  ### Keep Locations of files
 done
-aws s3 cp  /tmp/${name}_samples.csv ${s3Location}RawData
-aws s3 cp /tmp/${name}_project.csv ${s3Location}RawData
-aws s3 cp /tmp/${name}_NFSamples.csv ${s3Location}RawData
+aws s3 cp  /tmp/${name}_samples.csv ${s3Location}RawData/
+aws s3 cp /tmp/${name}_project.csv ${s3Location}RawData/
+aws s3 cp /tmp/${name}_NFSamples.csv ${s3Location}RawData/
 
 echo "Cleaning up"
 rm -rf /tmp/$projectString /tmp/${name}_samples.csv  /tmp/${name}_project.csv 
@@ -83,4 +92,4 @@ rm -rf /tmp/$projectString /tmp/${name}_samples.csv  /tmp/${name}_project.csv
 
 ### Can we run nextflow pipeline from here?
 /tmp/${name}_NFSamples.csv  ### This file could be fed into nextflow
-
+echo $s3Location
