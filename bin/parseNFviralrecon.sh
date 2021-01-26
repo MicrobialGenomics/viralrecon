@@ -46,6 +46,7 @@ aws s3 cp --recursive ${NFOutDir}results /tmp/results
 # samtools  depth results/variants/bam/*.mkD.sorted.bam | awk '{sum+=$3} END { print "Average = ",sum/NR}' > ${sample}_depthOfCoverage.txt
 
 rm /tmp/NFResults.csv
+rm /tmp/NextCladeSequences.fasta
 echo "library_id,InstrumentID,FlowcellID,s3FastqR1,s3FastqR2,s3BamFile,s3CovFile,RawDataSeqs,CovidSeqs,FastqSequence,PercCov,DepthOfCov,s3FastaFile" > /tmp/NFResults.csv
 for line in `cat $NFSamplesFile | tail -n +2`
 do
@@ -60,6 +61,7 @@ do
     s3BamFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.bam
    # echo "s3 Bam File is $s3BamFile"
     s3FastaFile=${NFOutDir}results/variants/bcftools/consensus/${sampleName}.consensus.masked.fa
+    cat /tmp/results/variants/bcftools/consensus/${sampleName}.consensus.masked.fa  >> /tmp/NextCladeSequences.fasta
   #  echo "s3 consensus File is $s3FastaFile"
     samtools depth /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
     aws s3 cp /tmp/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
@@ -79,6 +81,14 @@ do
 done
 
 aws s3 cp /tmp/NFResults.csv ${NFOutDir}
+
+
+### To run Nextclade to call mutations on sequences
+docker run -it --rm -u 1000 --volume="/tmp/:/seq" \
+neherlab/nextclade nextclade --input-fasta '/seq/NextCladeSequences.fasta' \
+--output-csv='/seq/NextCladeSequences_output.csv'
+
+aws s3 cp /tmp/NextCladeSequences_output.csv ${NFOutDir}
 ### Ivar
 ### results/variants/consensus/*masked*fa    --> consensus sequence
 ### results/variants/consensus/base_qc/*base_counts.tsv   --> Sequence composition 
