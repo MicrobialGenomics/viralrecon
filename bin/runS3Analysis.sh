@@ -34,7 +34,7 @@ git clone https://github.com/MicrobialGenomics/viralrecon.git
 nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
-  -profile awsbatch --skip_assembly --email mnoguera@irsicaixa.es --callers bcftools --save_align_intermeds true \
+  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
