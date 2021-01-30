@@ -17,4 +17,7 @@ bin/execution_trace*
 bin/.nextflow.log*
 bin/execution_report*
 bin/pipeline_dag*
+bin/gisaid_uploader*
+gisaid_uploader*
+exampleResults/*
 

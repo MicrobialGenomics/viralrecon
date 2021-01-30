@@ -41,7 +41,7 @@ bs list projects --filter-term=$name -f csv > /tmp/${name}_project.csv
 ### Obtain the project BaseSpace ID
 projectID=`cat /tmp/${name}_project.csv | grep "${name}," | awk 'BEGIN{FS=","}{print $2}'`
 ### Create a unique string for this run
-projectString=${name}_${projectID}_`date +"%Y-%m-%d"`
+projectString=`date +"%Y-%m-%d"`_${name}_${projectID}`date +"%Y-%m-%d"`
 s3Location=${s3Bucket}Runs/${projectString}/
 
 echo "Downloading all files for project $projectID or $name"
