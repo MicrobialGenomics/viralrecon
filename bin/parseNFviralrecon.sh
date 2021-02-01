@@ -26,8 +26,8 @@ aws s3 cp --recursive ${NFOutDir}results /tmp/results
 # MedianCoverage	
 # QPassBool	
 
-### Files of interest
-### BCFTools section
+
+### BCFTools section ---> Will use output from BCF tools
 ### s3FastqR1, and s3FastqR2 from NFSamplesFile
 ### s3BamFile results/variants/bam/*.mkD.sorted.bam || contains unmapped reads
 ### s3CovFile samtools depth results/variants/bam/*.mkD.sorted.bam
@@ -83,12 +83,22 @@ done
 aws s3 cp /tmp/NFResults.csv ${NFOutDir}
 
 
-### To run Nextclade to call mutations on sequences
+### To run Nextclade to call mutations on sequences and signature mutation-based phylotyping
 docker run -it --rm -u 1000 --volume="/tmp/:/seq" \
 neherlab/nextclade nextclade --input-fasta '/seq/NextCladeSequences.fasta' \
 --output-csv='/seq/NextCladeSequences_output.csv'
 
 aws s3 cp /tmp/NextCladeSequences_output.csv ${NFOutDir}
+
+
+### To run Pangolin for phylogenetic classification
+docker run -it --rm --volume="/tmp/:/seq" \
+microbialgenomics/pangolin pangolin '/seq/NextCladeSequences.fasta' 
+
+cp /tmp/lineage_report.csv /tmp/Pangolin_output.csv
+aws s3 cp /tmp/Pangolin_output.csv ${NFOutDir}
+
+
 ### Ivar
 ### results/variants/consensus/*masked*fa    --> consensus sequence
 ### results/variants/consensus/base_qc/*base_counts.tsv   --> Sequence composition 

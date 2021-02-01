@@ -16,11 +16,13 @@ if(is.na(args[4])){
 NFSamplesFile=args[1]  
 NCOutputFile=args[2]
 MetadataFile=args[3]
-projectID=args[4]
-# projectID="Covid-P001"
-# NFSamplesFile="exampleResults/NFResults.csv"
-# NCOutputFile="exampleResults/NextCladeSequences_output.csv"
-# MetadataFile="~/Downloads/COVID-Seq_Template_15012021.xlsx"
+PGOutputFile=args[4]
+projectID=args[5]
+projectID="Covid-P001"
+NFSamplesFile="exampleResults/NFResults.csv"
+NCOutputFile="exampleResults/NextCladeSequences_output.csv"
+PGOutputFile="exampleResults/Pangolin_output.csv"
+MetadataFile="~/Downloads/COVID-Seq_Template_15012021.xlsx"
 
 #### Merge NextFlow and NextClade results with sample Data
 
@@ -35,9 +37,12 @@ NCOutputDF<-NCOutputDF[-1,]
 colnames(NCOutputDF)[1]<-"library_id"
 colnames(NCOutputDF)
 
+PGOutputDF<-read.table(file=PGOutputFile,sep=",")
+colnames(PGOutputDF)<-c("library_id","pangolin_lineage","pangolin_probability","pangoLEARN_version","pangolin_status","pangolin_note")
 
 NFNCDF<-merge(NFSamplesDF,NCOutputDF,all.x=TRUE,by="library_id")
 colnames(NFNCDF)
+NFNCPGDF<-merge(NFNCDF,PGOutputDF,all.x=T,by="library_id")
 
 MetadataDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=2)
 colnames(MetadataDF)
@@ -56,7 +61,7 @@ MetadataDF$collection_date
 # MetadataDF$AnalysisComments<-iconv(MetadataDF$AnalysisComments,from="UTF-8",to="UTF-8")
 # MetadataDF$RunProjectID<-iconv(MetadataDF$RunProjectID,from="UTF-8",to="UTF-8")
 
-MetadataNFNCDF<-merge(MetadataDF,NFNCDF,by.x="LibraryID",by.y="library_id",all=T)
+MetadataNFNCDF<-merge(MetadataDF,NFNCPGDF,by.x="LibraryID",by.y="library_id",all=T)
 Encoding(MetadataNFNCDF$OriginatingLab[2])
 colnames(MetadataNFNCDF)[1]<-"library_id"
 MetadataDF$OriginatingLab
@@ -71,6 +76,7 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   #Use ; for FS because mutation list have ","
   write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 }
+write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 #### Produce files for GISAID batch upload
 
 

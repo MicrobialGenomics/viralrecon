@@ -7,7 +7,7 @@ if(is.na(args[1])){
 }
 
 ResultsFile=args[1] 
-# ResultsFile="~/Downloads/Covid-P001_Microbiologia_HUGTiP.csv"
+ResultsFile="~/Downloads/Covid-P001_Microbiologia_HUGTiP.csv"
 GisaidSubmitRoot=gsub(".csv","",ResultsFile)
 GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
 GisaidFastaFilename=basename(GisaidSubmitFasta)
@@ -37,18 +37,18 @@ gisaidType<-"betacoronavirus"
 gisaidSubmitter<-"mnoguera"
 gisaidSequencingTechnology<-"Illumina/MiSeq"
 gisaidAssemblyMethod<-"Viralrecon/bcftools"
-gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll",sep=", ")
+gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll", "Roger Paredes", "Bonaventura Clotet",sep=", ")
 gisaidLocalAuthors<-iconv(gisaidLocalAuthors,from="UTF-8",to="UTF-8")
 gisaidSubmittingLab<-"IrsiCaixa - Can Ruti CovidSeq"
 gisaidSubmittingLabAddress<-"Fundació irsiCaixa. Hospital Universitari Germans Trias i Pujol(HUGTiP), 2a planta, maternal Ctra Canyet s/n, Badalona"
-gisaidLocalAuthors<-iconv(gisaidSubmittingLabAddress,from="UTF-8",to="UTF-8")
+# gisaidSubmittingLabAddress<-iconv(gisaidSubmittingLabAddress,from="UTF-8",to="UTF-8")
 
 DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
   system(paste("rm",GisaidSubmitFasta))
+DF<-DF[! is.na(DF$qc.overallStatus),]
 for (i in 1:nrow(DF)){
- 
   ### Create a single file for sequences that pass the publishable criteria
-  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre")) & (DF[i,"PercCov"]>=90) & ( ! is.na(DF[i,"collection"]))){
+  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre")) & (DF[i,"PercCov"]>=90) & ( ! is.na(DF[i,"collection_date"]))){
    virus_name<-paste("hCoV-19/Spain/CT-IrsiCaixa",DF[i,"library_id"],"/",as.character(as.Date(DF[i,"collection_date"],"%Y")),sep="")
    write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
    outputDF[i,"submitter"]<-gisaidSubmitter
@@ -58,7 +58,7 @@ for (i in 1:nrow(DF)){
    outputDF[i,"covv_passage"]<-as.character(DF[i,"passage_details"])
    outputDF[i,"covv_collection_date"]<-as.character(as.Date(DF[i,"collection_date"],"%Y-%m-%d"))
    outputDF[i,"covv_location"]<-as.character(paste("Europe","Spain","Catalunya",DF[i,"location"],sep=" / "))
-   outputDF[i,"covv_add_location"]<-ifelse(is.na(DF[i,"location"]),"",DF[i,"location"])
+   outputDF[i,"covv_add_location"]<-ifelse(is.na(DF[i,"location_comment"]),"",DF[i,"location_comment"])
    outputDF[i,"covv_host"]<-DF[i,"host"]                                                
    outputDF[i,"covv_add_host_info"]<-ifelse(is.na(DF[i,"host_comment"]),"",DF[i,"host_comment"])
    outputDF[i,"covv_gender"]<-DF[i,"gender"]
