@@ -50,6 +50,11 @@ option_list <- list(
                 default = "./",
                 help = "Output directory",
                 metavar = "path"),
+    make_option(c("-s", "--ingest_sql"),
+                type = "character",
+                default = "true",
+                help = "boolean indicating if data must be ingested to de db. (true or false)",
+                metavar = "boolean")
 )
 
 opt_parser <- OptionParser(option_list=option_list)
@@ -58,6 +63,10 @@ opt <- parse_args(opt_parser)
 if(!all(file.exists(opt$viralrecon, opt$nextclade, opt$pangolin))) {
     message("You need to specify NFSamplesFile NextCladeOutputFile MetadataFile all in csv format.")
     message("Metadata file needs to include library_id, at least")
+}
+
+if (!opt$ingest_sql %in% c("true", "false")) {
+    message("ingest_sql must be true or false")
 }
 
 # Load file result data ---------------------------------------------------
@@ -90,9 +99,11 @@ metadata %>%
     left_join(pangolin, by = "library_id")
 
 # Ingest db ---------------------------------------------------------------
-nfcore %>% ingest_db("viralrecon", cn = cn)
-nextclade %>% ingest_db("nextclade", cn = cn)
-pangolin %>% ingest_db("pangolin", cn = cn)
+if (opt$ingest_sql == "true") {
+    nfcore %>% ingest_db("viralrecon", cn = cn)
+    nextclade %>% ingest_db("nextclade", cn = cn)
+    pangolin %>% ingest_db("pangolin", cn = cn)
+}
 
 # Extract tables by project -----------------------------------------------
 metadata %>%
