@@ -6,4 +6,18 @@ results/
 tests/
 testing/
 *.pyc
+basespace/
+execution_time*
+execution_trace*
+execution_report*
+pipeline_dag*
+.nextflow.log*
+bin/execution_time*
+bin/execution_trace*
+bin/.nextflow.log*
+bin/execution_report*
+bin/pipeline_dag*
+bin/gisaid_uploader*
+gisaid_uploader*
+exampleResults/*
 

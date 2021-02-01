@@ -981,6 +981,9 @@ process BOWTIE2 {
     script:
     input_reads = single_end ? "-U $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
     filter = params.filter_unmapped ? "-F4" : ""
+    /* MNJ 2021-01-24 18:30:54
+    * Add also mapping of unpaired reads.
+    */
     """
     bowtie2 \\
         --threads $task.cpus \\
@@ -1004,6 +1007,7 @@ process SORT_BAM {
                       if (filename.endsWith(".flagstat")) "samtools_stats/$filename"
                       else if (filename.endsWith(".idxstats")) "samtools_stats/$filename"
                       else if (filename.endsWith(".stats")) "samtools_stats/$filename"
+                      else if (filename.endsWith("depthOfCoverage.txt")) "samtools_stats/$filename"
                       else (params.protocol != 'amplicon' && params.skip_markduplicates) || params.save_align_intermeds ? filename : null
                 }
 
@@ -1020,10 +1024,12 @@ process SORT_BAM {
     script:
     """
     samtools sort -@ $task.cpus -o ${sample}.sorted.bam -T $sample $bam
+    
     samtools index ${sample}.sorted.bam
     samtools flagstat ${sample}.sorted.bam > ${sample}.sorted.bam.flagstat
     samtools idxstats ${sample}.sorted.bam > ${sample}.sorted.bam.idxstats
     samtools stats ${sample}.sorted.bam > ${sample}.sorted.bam.stats
+    samtools depth ${sample}.sorted.bam  | awk '{sum+=\$3} END { print "Average = ",sum/NR}' > ${sample}_depthOfCoverage.txt
     """
 }
 
