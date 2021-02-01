@@ -861,7 +861,7 @@ if (!params.skip_adapter_trimming && params.fastp) {
             [ ! -f  ${sample}_1.fastq.gz ] && ln -s ${reads[0]} ${sample}_1.fastq.gz
             [ ! -f  ${sample}_2.fastq.gz ] && ln -s ${reads[1]} ${sample}_2.fastq.gz
             IN_READS='${sample}_1.fastq.gz ${sample}_2.fastq.gz'
-            OUT_READS='${sample}_1.trim.fastq.gz ${sample}_1.fail.fastq.gz ${sample}_2.trim.fastq.gz ${sample}_2.fail.fastq.gz'
+            OUT_READS='${sample}_1.trim.fastq.gz ${sample}_3.trim.fastq.gz ${sample}_2.trim.fastq.gz ${sample}_4.trim.fastq.gz'
             
             trimmomatic PE -threads $task.cpus -phred33 \${IN_READS} \${OUT_READS} \\
                 ILLUMINACLIP:/opt/conda/envs/nf-core-viralrecon-1.1.0/share/trimmomatic-0.39-1/adapters/${params.adapter_type}-PE.fa:${params.illclip_misamtch}:${params.illclip_misamtch}:${params.illclip_simple_thres} \\
@@ -979,7 +979,7 @@ process BOWTIE2 {
     path "*.log" into ch_bowtie2_mqc
 
     script:
-    input_reads = single_end ? "-U $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
+    input_reads = single_end ? "-U $reads" : "-1 ${reads[0]} -2 ${reads[1]} -U ${reads[3]},${reads[4]}"
     filter = params.filter_unmapped ? "-F4" : ""
     /* MNJ 2021-01-24 18:30:54
     * Add also mapping of unpaired reads.
@@ -1188,13 +1188,13 @@ if (params.skip_markduplicates) {
         keep_dup = params.filter_dups ? "true" : "false"
         """
         picard -Xmx${avail_mem}g MarkDuplicates \\
-            INPUT=${bam[0]} \\
-            OUTPUT=${prefix}.sorted.bam \\
-            ASSUME_SORTED=true \\
-            REMOVE_DUPLICATES=$keep_dup \\
-            METRICS_FILE=${prefix}.MarkDuplicates.metrics.txt \\
-            VALIDATION_STRINGENCY=LENIENT \\
-            TMP_DIR=tmp
+            -INPUT ${bam[0]} \\
+            -OUTPUT ${prefix}.sorted.bam \\
+            -ASSUME_SORTED true \\
+            -REMOVE_DUPLICATES $keep_dup \\
+            -METRICS_FILE ${prefix}.MarkDuplicates.metrics.txt \\
+            -VALIDATION_STRINGENCY LENIENT \\
+            -TMP_DIR tmp
         samtools index ${prefix}.sorted.bam
         samtools idxstats ${prefix}.sorted.bam > ${prefix}.sorted.bam.idxstats
         samtools flagstat ${prefix}.sorted.bam > ${prefix}.sorted.bam.flagstat
