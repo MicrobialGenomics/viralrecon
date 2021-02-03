@@ -26,7 +26,7 @@ covDFMelt$variable<-as.factor(covDFMelt$variable)
 require(ggplot2)
 ggplot(covDFMelt,aes(x=position,y=value,color=variable))+geom_line(aes(color=variable),size=0.021)+theme(legend.position = "none")+
   theme(axis.text.y = element_text(colour = 'black', size = 12), axis.title.y = element_text(size = 12,  hjust = 0.5, vjust = 0.2)) + 
-  theme(strip.text.y = element_text(size = 11, hjust = 0.5, vjust =    0.5, face = 'bold'))
+  theme(strip.text.y = element_text(size = 11, hjust = 0.5, vjust =    0.5, face = 'bold'))+scale_y_sqrt()
 
 ArticBed<-read.table("~/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed",sep="\t",header=F)
 ArticBed<-ArticBed[(! grepl("alt",ArticBed$V4)),]

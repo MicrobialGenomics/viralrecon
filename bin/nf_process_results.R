@@ -94,7 +94,7 @@ nfcore %>% ingest_db("viralrecon", cn = cn)
 nextclade %>% ingest_db("nextclade", cn = cn)
 pangolin %>% ingest_db("pangolin", cn = cn)
 
-# Extract tables by project -----------------------------------------------
+# Extract tables by study    -----------------------------------------------
 metadata %>%
     pull(StudyID) %>%
     unique() %>%
