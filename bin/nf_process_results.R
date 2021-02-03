@@ -45,6 +45,11 @@ option_list <- list(
                 default = NULL,
                 help = "Comma-separated file with pangolin results",
                 metavar = "file"),
+    make_option(c("-m", "--metadata"),
+                type = "character",
+                default = NULL,
+                help = "Comma-separated file with metadata information",
+                metavar = "file"),
     make_option(c("-o", "--out_dir"),
                 type = "character",
                 default = "./",
@@ -86,11 +91,17 @@ pangolin <- opt$pangolin %>%
 cn <- connect_db(dbname = "mysql_covid_seq")
 on.exit(DBI::dbDisconnect(cn))
 
-metadata <- tbl(cn, "samples") %>%
-    left_join(tbl(cn, "plate_design"), by = "s_idx") %>%
-    left_join(tbl(cn, "library_info"), by = "library_id") %>%
-    collect() %>%
-    filter(library_id %in% nfcore$library_id)
+if (is.null(opt$metadata)) {
+    metadata <- tbl(cn, "samples") %>%
+        left_join(tbl(cn, "plate_design"), by = "s_idx") %>%
+        left_join(tbl(cn, "library_info"), by = "library_id") %>%
+        collect() %>%
+        filter(library_id %in% nfcore$library_id)
+} else {
+    metadata <- opt$metadata %>%
+        readr::read_csv() %>%
+        filter(library_id %in% nfcore$library_id)
+}
 
 # Merge -------------------------------------------------------------------
 metadata %>%
@@ -101,7 +112,9 @@ metadata %>%
 # Ingest db ---------------------------------------------------------------
 if (opt$ingest_sql == "true") {
     nfcore %>% ingest_db("viralrecon", cn = cn)
-    nextclade %>% ingest_db("nextclade", cn = cn)
+    nextclade %>%
+        setNames(names(.) %>% str_replace_all("[.]", "_")) %>%
+        ingest_db("nextclade", cn = cn)
     pangolin %>% ingest_db("pangolin", cn = cn)
 }
 
