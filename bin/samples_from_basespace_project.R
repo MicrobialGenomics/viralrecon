@@ -48,7 +48,7 @@ metadata <- dplyr::tbl(cn, "samples") %>%
     dplyr::filter(run_id == run_name) %>%
     dplyr::collect() %>%
     dplyr::mutate(
-        fastq_id = stringr::str_c(run_id, plate_id, library_id, sep = "_"),
+        fastq_id = stringr::str_c(run_id, library_id, sep = "_"),
         .before = 1
     ) %>%
     readr::write_delim(
