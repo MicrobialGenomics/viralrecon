@@ -76,6 +76,18 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   #Use ; for FS because mutation list have ","
   write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 }
+
+### Keep track of study specific fasta files. These may be handy for internal result reporting.
+for(study in levels(MetadataNFNCDF$StudyID)){
+  mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
+  fileConn<-file(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep=""))
+  for (i in nrow(mySubDF)){
+    writeLines(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"],"\n"),fileConn)
+  }
+  close(fileConn)
+}
+
+
 write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 #### Produce files for GISAID batch upload
 

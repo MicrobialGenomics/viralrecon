@@ -39,5 +39,9 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --inp
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
  --outdir ${NFOutDir}results --with-tower \
- --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20
+ --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 
+# ### To run Nextclade to call mutations on sequences
+# docker run -it --rm -u 1000 --volume="/Users/mnoguera/Downloads/:/seq" \
+# neherlab/nextclade nextclade --input-fasta '/seq/gisaid_hcov-19_2021_01_25_16.fasta' \
+# --output-csv='/seq/nextclade_output.csv'
