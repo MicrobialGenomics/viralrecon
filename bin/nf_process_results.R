@@ -28,6 +28,41 @@ ingest_db <- function(data, table, cn, dbname = "mysql_covid_seq") {
     )
 }
 
+sql_update_table <- function(df, pk_cols, table_name, dbname = used_db) {
+
+    if (length(pk_cols) > 1) { stop("This function only works with one column PK") }
+
+    cn <- connect_db(dbname)
+    on.exit(DBI::dbDisconnect(cn))
+
+    df %>%
+        dplyr::pull(!!pk_cols) %>%
+        purrr::map(function(lev) {
+            x <- df %>% filter(!!sym(pk_cols) == !!lev)
+            if (nrow(x) != 1) stop("Input dataframe must be exactly 1 row")
+            if (!all(pk_cols %in% colnames(x))) stop("All columns specified in 'pk_cols' must be present in 'x'")
+
+            # Build the update string --------------------------------------------------
+            df_key <- dplyr::select(x,  one_of(pk_cols))
+            df_upt <- dplyr::select(x, -one_of(pk_cols))
+
+            set_str <- purrr::map_chr(colnames(df_upt), ~glue::glue_sql('{`.x`} = {x[[.x]]}', .con = cn))
+            set_str <- paste(set_str, collapse = ", ")
+
+            where_str <- purrr::map_chr(colnames(df_key), ~glue::glue_sql("{`.x`} = {x[[.x]]}", .con = cn))
+            where_str <- paste(where_str, collapse = " AND ")
+
+            update_str <- glue::glue('UPDATE {dbname}.{table_name} SET {set_str} WHERE {where_str}')
+
+            # Execute ------------------------------------------------------------------
+            query_res <- DBI::dbSendQuery(cn, update_str)
+            DBI::dbClearResult(query_res)
+
+            return(invisible(TRUE))
+        })
+    return(invisible(TRUE))
+}
+
 # Checks ------------------------------------------------------------------
 option_list <- list(
     make_option(c("-v", "--viralrecon"),
@@ -50,6 +85,11 @@ option_list <- list(
                 default = NULL,
                 help = "Comma-separated file with metadata information",
                 metavar = "file"),
+    make_option(c("-d", "--dbname"),
+                type = "character",
+                default = "mysql_covid_seq",
+                help = "database name, two options = mysql_covid_seq or mysql_test",
+                metavar = "text"),
     make_option(c("-o", "--out_dir"),
                 type = "character",
                 default = "./",
@@ -88,7 +128,7 @@ pangolin <- opt$pangolin %>%
     rename(library_id = taxon)
 
 # Extract metadata from database ------------------------------------------
-cn <- connect_db(dbname = "mysql_covid_seq")
+cn <- connect_db(dbname = opt$dbname)
 on.exit(DBI::dbDisconnect(cn))
 
 if (is.null(opt$metadata)) {
@@ -112,10 +152,19 @@ metadata %>%
 # Ingest db ---------------------------------------------------------------
 if (opt$ingest_sql == "true") {
     nfcore %>% ingest_db("viralrecon", cn = cn)
+
     nextclade %>%
         setNames(names(.) %>% str_replace_all("[.]", "_")) %>%
         ingest_db("nextclade", cn = cn)
+
     pangolin %>% ingest_db("pangolin", cn = cn)
+
+    nfcore %>%
+        select(library_id) %>%
+        mutate(sample_statue = "sequenced") %>%
+        sql_update_table(pk_cols = "library_id",
+                         table_name = "sample_status",
+                         dbname = opt$dbname)
 }
 
 # Extract tables by project -----------------------------------------------
