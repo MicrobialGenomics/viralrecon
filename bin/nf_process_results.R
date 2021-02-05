@@ -167,7 +167,7 @@ if (opt$ingest_sql == "true") {
                          dbname = opt$dbname)
 }
 
-# Extract tables by project -----------------------------------------------
+# Extract tables by study    -----------------------------------------------
 metadata %>%
     pull(StudyID) %>%
     unique() %>%

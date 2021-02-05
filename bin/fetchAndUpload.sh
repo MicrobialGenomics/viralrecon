@@ -63,19 +63,20 @@ do
  fileR2=`echo $fileR1 | sed s/_R1_/_R2_/`
  ### Add extra filtering steps (is sample in the csv file?)
  ### What's the sample LibId (keep it)
- echo "copying $file to ${s3Location}RawData"
+ 
  
  filename=${file##*/}
  filenameR1=$filename
  
  filenameR2=`echo $filenameR1 | sed s/_R1_/_R2_/`
  samplename=${filename%%_S*}
- if  ! grep -Fxq "$samplename" $samplesFile
+ if  ! grep -F "$samplename" $samplesFile
 then
 ### We won't analyze samples that are not passed as argument.
     echo "Sample $samplename not found in $samplesFile ... Skipping"
     continue
 fi
+echo "copying $file to ${s3Location}RawData"
  echo $samplename,${s3Location}RawData/${filenameR1},${s3Location}RawData/${filenameR2} | tee >> /tmp/${name}_NFSamples.csv
  echo $filename $samplename
  aws s3 cp $fileR1 ${s3Location}RawData/
