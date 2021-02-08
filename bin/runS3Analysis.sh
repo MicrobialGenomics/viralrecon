@@ -26,7 +26,8 @@ NFOutDir=$2
 cd /tmp/
 
 git clone https://github.com/MicrobialGenomics/viralrecon.git
-
+export TOWER_ACCESS_TOKEN=4b252dc4118da98eaaacebd6e07aa6670f000934
+export NXF_VER=20.10.0 
 
 ### Try with modified version of viralrecon/Full Dataset
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
@@ -39,7 +40,7 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --inp
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
  --outdir ${NFOutDir}results --with-tower \
- --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
+ --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 -resume
 
 # ### To run Nextclade to call mutations on sequences
 # docker run -it --rm -u 1000 --volume="/Users/mnoguera/Downloads/:/seq" \
