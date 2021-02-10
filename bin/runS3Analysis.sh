@@ -35,12 +35,12 @@ export NXF_VER=20.10.0
 nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
-  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
+  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es --align_unpaired \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
  --outdir ${NFOutDir}results --with-tower \
- --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 -resume
+ --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 
 # ### To run Nextclade to call mutations on sequences
 # docker run -it --rm -u 1000 --volume="/Users/mnoguera/Downloads/:/seq" \
