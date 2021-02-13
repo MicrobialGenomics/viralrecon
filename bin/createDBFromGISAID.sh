@@ -19,6 +19,7 @@ GisaidMetadataFile=`aws s3 ls ${CovidBucket}GISAID/DataFiles/ |awk '{print $4}' 
 dateString=`echo $GisaidFastaFile | sed s/sequences_// | sed s/\.fasta\.gz//`
 ### Define Origin filed for data in production environment
 GISAIDDataFilesDir="GISAID/DataFiles/"
+GISAIDSubsetAnalysisDir="GISAID/SubsetAnalysis/"
 GisaidFastaFile=${CovidBucket}${GISAIDDataFilesDir}$GisaidFastaFile
 GisaidMetadataFile=${CovidBucket}${GISAIDDataFilesDir}$GisaidMetadataFile
 
@@ -68,8 +69,10 @@ gzcat ${GisaidMetadataFile} | fgrep Europe | fgrep Spain  | awk '{print $1}' > $
 seqkit grep -f $CatIDsFile $GisaidFastaFile > $CatFastaFile
 ### Use Metadata File to keep al Sequences From Catalunya, along with their collection dates, Originating and Submitting Labs and parse_seqids
 
+aws s3 cp $CatMetadataFile $GISAIDSubsetAnalysisDir
 # We could further filter sequences/metadata comparing with DB contents and keeping only "new" sequences and
 # This would increase speed
+echo "Using $CatFastaFile"
 
 ### To run Nextclade to call mutations on sequences and signature mutation-based phylotyping
 docker run -it --rm -u 1000 --volume="/tmp/:/seq" \
@@ -77,7 +80,7 @@ neherlab/nextclade nextclade --jobs 4 --input-fasta /seq/${CatFastaFile##*\/} \
 --output-csv='/seq/NextCladeSequences_output.csv'
 
 mv /tmp/NextCladeSequences_output.csv /tmp/NextClade_${dateString}_output.csv
-aws s3 cp /tmp/NextClade_${dateString}_output.csv ${CovidBucket}${GISAIDDataFilesDir}
+aws s3 cp /tmp/NextClade_${dateString}_output.csv $GISAIDSubsetAnalysisDir
 
 ### To run Pangolin for phylogenetic classification
 rm -rf /tmp/lineage_report.csv
@@ -85,7 +88,7 @@ docker run -it --rm --volume="/tmp/:/seq" \
 microbialgenomics/pangolin pangolin /seq/${CatFastaFile##*\/} -t 4 -o /seq/
 
 cp /tmp/lineage_report.csv  /tmp/Pangolin_${dateString}_output.csv
-aws s3 cp /tmp/Pangolin_${dateString}_output.csv ${CovidBucket}${GISAIDDataFilesDir}
+aws s3 cp /tmp/Pangolin_${dateString}_output.csv $GISAIDSubsetAnalysisDir
 ### Now we have metadata and analysis results from NextClade and Pangolin
 
 ### Insert this information into specific DB
