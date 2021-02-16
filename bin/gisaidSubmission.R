@@ -6,8 +6,9 @@ if(is.na(args[1])){
   print("Metadata file needs to include library_id, at least")
 }
 
-ResultsFile=args[1] 
-ResultsFile="~/Downloads/Covid-P001_Microbiologia_HUGTiP.csv"
+ResultsFile=args[1]
+ResultsFile="~/Downloads/COVID-P002_Microbiologia_HUGTiP.csv"
+ResultsFile="~/Downloads/COVID-P002_ZooStudy-CRESA.csv"
 GisaidSubmitRoot=gsub(".csv","",ResultsFile)
 GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
 GisaidFastaFilename=basename(GisaidSubmitFasta)
@@ -48,8 +49,8 @@ DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
 DF<-DF[! is.na(DF$qc.overallStatus),]
 for (i in 1:nrow(DF)){
   ### Create a single file for sequences that pass the publishable criteria
-  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre")) & (DF[i,"PercCov"]>=90) & ( ! is.na(DF[i,"collection_date"]))){
-   virus_name<-paste("hCoV-19/Spain/CT-IrsiCaixa",DF[i,"library_id"],"/",as.character(as.Date(DF[i,"collection_date"],"%Y")),sep="")
+  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
+   virus_name<-paste("hCoV-19/Spain/CT-IrsiCaixa",DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
    write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
    outputDF[i,"submitter"]<-gisaidSubmitter
    outputDF[i,"fn"]<-GisaidFastaFilename
@@ -57,9 +58,10 @@ for (i in 1:nrow(DF)){
    outputDF[i,"covv_type"]<-gisaidType
    outputDF[i,"covv_passage"]<-as.character(DF[i,"passage_details"])
    outputDF[i,"covv_collection_date"]<-as.character(as.Date(DF[i,"collection_date"],"%Y-%m-%d"))
+### Note that accents and others are remove from GISAID metadata. Consider use stringi::stri_trans_general
    outputDF[i,"covv_location"]<-as.character(paste("Europe","Spain","Catalunya",DF[i,"location"],sep=" / "))
    outputDF[i,"covv_add_location"]<-ifelse(is.na(DF[i,"location_comment"]),"",DF[i,"location_comment"])
-   outputDF[i,"covv_host"]<-DF[i,"host"]                                                
+   outputDF[i,"covv_host"]<-DF[i,"host"]
    outputDF[i,"covv_add_host_info"]<-ifelse(is.na(DF[i,"host_comment"]),"",DF[i,"host_comment"])
    outputDF[i,"covv_gender"]<-DF[i,"gender"]
    outputDF[i,"covv_patient_age"]<-DF[i,"age"]
@@ -78,8 +80,8 @@ for (i in 1:nrow(DF)){
    outputDF[i,"covv_subm_lab_addr"]<-gisaidSubmittingLabAddress
    outputDF[i,"covv_subm_sample_id"]<-DF[i,"library_id"]
    outputDF[i,"covv_authors"]<-paste(gisaidLocalAuthors,DF[i,"OriginatingLabAuthors"])
-   outputDF[i,"covv_comment"]<-NA
-   outputDF[i,"comment_type"]<-NA
+   outputDF[i,"covv_comment"]<-""
+   outputDF[i,"comment_type"]<-""
   }
 }
   outputDF<-outputDF[! rowSums(is.na(outputDF))==ncol(outputDF),]

@@ -51,9 +51,10 @@ echo "library_id,InstrumentID,FlowcellID,s3FastqR1,s3FastqR2,s3BamFile,s3CovFile
 for line in `cat $NFSamplesFile | tail -n +2`
 do
    # echo $line
+   sampleName=`echo $line | awk 'BEGIN{FS=","}{print $1}'`
    instrumentID=`samtools view /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $1}'`
    flowcellID=`samtools view /tmp/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $3}'`
-    sampleName=`echo $line | awk 'BEGIN{FS=","}{print $1}'`
+
   # echo "sampleName is $sampleName"
     s3FastqR1=`echo $line | awk 'BEGIN{FS=","}{print $2}'`
     s3FastqR2=`echo $line | awk 'BEGIN{FS=","}{print $3}'`
@@ -93,7 +94,7 @@ aws s3 cp /tmp/NextCladeSequences_output.csv ${NFOutDir}
 
 ### To run Pangolin for phylogenetic classification
 docker run -it --rm --volume="/tmp/:/seq" \
-microbialgenomics/pangolin pangolin '/seq/NextCladeSequences.fasta' 
+microbialgenomics/pangolin pangolin -o '/seq/lineage_report.csv' '/seq/NextCladeSequences.fasta' 
 
 cp /tmp/lineage_report.csv /tmp/Pangolin_output.csv
 aws s3 cp /tmp/Pangolin_output.csv ${NFOutDir}

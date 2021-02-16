@@ -13,20 +13,20 @@ if(is.na(args[4])){
   print("Metadata file needs to include library_id, at least")
 }
 
-NFSamplesFile=args[1]  
+NFSamplesFile=args[1]
 NCOutputFile=args[2]
 MetadataFile=args[3]
 PGOutputFile=args[4]
 projectID=args[5]
-projectID="Covid-P001"
-NFSamplesFile="exampleResults/NFResults.csv"
-NCOutputFile="exampleResults/NextCladeSequences_output.csv"
-PGOutputFile="exampleResults/Pangolin_output.csv"
-MetadataFile="~/Downloads/COVID-Seq_Template_15012021.xlsx"
+projectID="COVID-P002"
+NFSamplesFile="/tmp/NFResults.csv"
+NCOutputFile="/tmp/NextCladeSequences_output.csv"
+PGOutputFile="/tmp/Pangolin_output.csv"
+MetadataFile="~/Downloads/Config_Run05022021.xlsx"
 
 #### Merge NextFlow and NextClade results with sample Data
 
-NFSamplesDF<-read.table(file=NFSamplesFile,sep=",")
+NFSamplesDF<-read.delim(file=NFSamplesFile,sep=",",header=F)
 colnames(NFSamplesDF)<-NFSamplesDF[1,]
 colnames(NFSamplesDF)
 NFSamplesDF<-NFSamplesDF[-1,]
@@ -61,7 +61,7 @@ MetadataDF$collection_date
 # MetadataDF$AnalysisComments<-iconv(MetadataDF$AnalysisComments,from="UTF-8",to="UTF-8")
 # MetadataDF$RunProjectID<-iconv(MetadataDF$RunProjectID,from="UTF-8",to="UTF-8")
 
-MetadataNFNCDF<-merge(MetadataDF,NFNCPGDF,by.x="LibraryID",by.y="library_id",all=T)
+MetadataNFNCDF<-merge(MetadataDF,NFNCPGDF,by.x="library_id",by.y="library_id",all=T)
 Encoding(MetadataNFNCDF$OriginatingLab[2])
 colnames(MetadataNFNCDF)[1]<-"library_id"
 MetadataDF$OriginatingLab
@@ -76,6 +76,20 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   #Use ; for FS because mutation list have ","
   write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 }
+
+### Keep track of study specific fasta files. These may be handy for internal result reporting.
+for(study in levels(MetadataNFNCDF$StudyID)){
+  system(paste("rm",paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep="")))
+  mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
+  # fileConn<-file(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep=""),)
+  for (i in 1:nrow(mySubDF)){
+    print(i)
+    # writeLines(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"],"\n"),fileConn)
+    write(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"]),file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep=""),append=T)
+  }
+  # close(fileConn)
+}
+
 write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 #### Produce files for GISAID batch upload
 
