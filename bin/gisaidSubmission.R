@@ -7,8 +7,8 @@ if(is.na(args[1])){
 }
 
 ResultsFile=args[1]
-ResultsFile="~/Downloads/COVID-P002_Microbiologia_HUGTiP.csv"
-ResultsFile="~/Downloads/COVID-P002_ZooStudy-CRESA.csv"
+ResultsFile="~/Downloads/Covid-M001_Microbiologia_HUGTIP.csv"
+# ResultsFile="~/Downloads/COVID-P002_ZooStudy-CRESA.csv"
 GisaidSubmitRoot=gsub(".csv","",ResultsFile)
 GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
 GisaidFastaFilename=basename(GisaidSubmitFasta)
@@ -37,7 +37,7 @@ colnames(outputDF) <- y
 gisaidType<-"betacoronavirus"
 gisaidSubmitter<-"mnoguera"
 gisaidSequencingTechnology<-"Illumina/MiSeq"
-gisaidAssemblyMethod<-"Viralrecon/bcftools"
+gisaidAssemblyMethod<-"Viralrecon/iVar"
 gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll", "Roger Paredes", "Bonaventura Clotet",sep=", ")
 gisaidLocalAuthors<-iconv(gisaidLocalAuthors,from="UTF-8",to="UTF-8")
 gisaidSubmittingLab<-"IrsiCaixa - Can Ruti CovidSeq"
@@ -47,9 +47,13 @@ gisaidSubmittingLabAddress<-"Fundació irsiCaixa. Hospital Universitari Germans 
 DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
   system(paste("rm",GisaidSubmitFasta))
 DF<-DF[! is.na(DF$qc.overallStatus),]
+DF$qc.overallStatus<-as.factor(DF$qc.overallStatus)
+DF[is.na(DF$treatment),"treatment"]<-"Unknown"
+DF[is.na(DF$host_comment),"host_comment"]<-"--"
 for (i in 1:nrow(DF)){
   ### Create a single file for sequences that pass the publishable criteria
-  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
+  if((DF[i,"qc.overallStatus"]%in% c("good","mediocre")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
+   print(DF[i,"qc.overallStatus"])
    virus_name<-paste("hCoV-19/Spain/CT-IrsiCaixa",DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
    write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
    outputDF[i,"submitter"]<-gisaidSubmitter
@@ -84,7 +88,7 @@ for (i in 1:nrow(DF)){
    outputDF[i,"comment_type"]<-""
   }
 }
-  outputDF<-outputDF[! rowSums(is.na(outputDF))==ncol(outputDF),]
+outputDF<-outputDF[! rowSums(is.na(outputDF))==ncol(outputDF),]
 write.csv(outputDF,file=GisaidSubmitCsv,row.names = F,fileEncoding = "UTF-8")
 DF$passage_details
 
