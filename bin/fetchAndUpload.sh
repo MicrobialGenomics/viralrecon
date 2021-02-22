@@ -36,15 +36,16 @@ name=$1 || echo "Project name not defined"
 samplesFile=$2 || echo "Metadata file not defined, will process all samples"
 idCrossFile=$3 || echo "No ID CorssFile passed as argument, filenames will need to match library_id"
 
-
+echo "idCrossFile is: $idCrossFile"
 ### Behaviour: If Id cross File is not provided $name variable will be used throughout and needs to correspond to the basespace project
 ### Otherwise: $name variable will only be used to retrieve samples, but $newProjectName will be used for further labeling
-if [ ! -z ${idCrossFile+x } ] ### If variable is set
+if [ ! -z "$3"] ### If variable is set
 then  
 newProjectName=`grep $name $idCrossFile | awk '{print $2}'`
 else ##
 newProjectName=$name
 fi
+echo "passed the rubicon"
 
 ### Lists all projects to csv file, filtering by name
 ### redirect output to a filecan be useful to get project id
@@ -63,7 +64,7 @@ bs list biosamples --project-id=$projectID -f csv > /tmp/${newProjectName}_sampl
 mkdir /tmp/$projectString
 bs download project -i $projectID -o /tmp/$projectString --overwrite
 
-if [ ! -z ${idCrossFile+x} ] ### If variable is set we'll need to rename all fastq files that have been downloaded.
+if [ ! -z "$3"] ### If variable is set we'll need to rename all fastq files that have been downloaded.
 then  
     for file in `find /tmp/$projectString -name *fastq.gz`
     do

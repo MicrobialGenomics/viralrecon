@@ -100,7 +100,7 @@ docker run -it --rm --volume="/tmp/${NFDirPath}/:/seq" \
 microbialgenomics/pangolin pangolin -o '/seq/lineage_report.csv' '/seq/NextCladeSequences.fasta' 
 
 cp /tmp/${NFDirPath}/lineage_report.csv /tmp/${NFDirPath}/Pangolin_output.csv
-aws s3 cp /tmp/${NFDirPath}/sPangolin_output.csv ${NFOutDir}
+aws s3 cp /tmp/${NFDirPath}/Pangolin_output.csv ${NFOutDir}
 
 
 ### Ivar
