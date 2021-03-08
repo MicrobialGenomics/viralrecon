@@ -67,7 +67,7 @@ do
     s3FastaFile=${NFOutDir}results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa
     cat /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa  >> /tmp/${NFDirPath}/NextCladeSequences.fasta
   #  echo "s3 consensus File is $s3FastaFile"
-    samtools depth /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
+    samtools depth -q 20 -Q 10 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
     aws s3 cp /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
     s3CovFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
    # echo "s3 Coverage file is $s3CovFile"
@@ -76,7 +76,7 @@ do
     CovidSeqs=`samtools view -F 4 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
    # echo "File has $CovidSeqs covid sequences"
     ConsensusSequence=`tail -n +2 /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | tr -d '\n'`
-    DepthOfCoverage=`samtools  depth /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | awk '{sum+=$3} END { print sum/NR}'`
+    DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`
     PercN=`tail -n 1 /tmp/${NFDirPath}/results/variants/ivar/consensus/base_qc/${sampleName}.AF0.75.base_counts.tsv | awk '{print $3}'`
     #echo "$PercN of genome is N"
     PercCov=`echo "(100-$PercN)" | bc -l`
@@ -99,7 +99,7 @@ aws s3 cp /tmp/${NFDirPath}/NextCladeSequences_output.csv ${NFOutDir}
 docker run -it --rm --volume="/tmp/${NFDirPath}/:/seq" \
 microbialgenomics/pangolin pangolin -o '/seq/lineage_report.csv' '/seq/NextCladeSequences.fasta' 
 
-cp /tmp/${NFDirPath}/lineage_report.csv /tmp/${NFDirPath}/Pangolin_output.csv
+cp /tmp/${NFDirPath}/lineage_report.csv/lineage_report.csv /tmp/${NFDirPath}/Pangolin_output.csv
 aws s3 cp /tmp/${NFDirPath}/Pangolin_output.csv ${NFOutDir}
 
 

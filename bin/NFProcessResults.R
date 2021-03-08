@@ -18,12 +18,13 @@ NCOutputFile=args[2]
 MetadataFile=args[3]
 PGOutputFile=args[4]
 projectID=args[5]
-projectID="Covid-M001"
-localNFDir="/tmp/2021-02-16_Covid-M001_228885657/"
-NFSamplesFile="/tmp/2021-02-16_Covid-M001_228885657/NFResults.csv"
-NCOutputFile="/tmp/2021-02-16_Covid-M001_228885657//NextCladeSequences_output.csv"
-PGOutputFile="/tmp/2021-02-16_Covid-M001_228885657//Pangolin_output.csv"
-MetadataFile="~/Downloads/Config_Run10022021.xlsx"
+projectID="Covid-R006"
+localNFDir="/tmp/2021-03-08_Covid-R006_235127893/"
+NFSamplesFile=paste0(localNFDir,"NFResults.csv")
+NCOutputFile=paste0(localNFDir,"NextCladeSequences_output.csv")
+PGOutputFile=paste0(localNFDir,"Pangolin_output.csv")
+MetadataFile="~/Downloads/Config_Run05032021.xlsx"
+
 
 #### Merge NextFlow and NextClade results with sample Data
 

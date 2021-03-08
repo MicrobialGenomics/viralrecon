@@ -32,7 +32,7 @@ export NXF_VER=20.10.0
 ### Try with modified version of viralrecon/Full Dataset
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
 ### All config files for analysis are on s3://***REMOVED***/NextFlow/Configs/
-nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
+nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile \
  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
   -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
@@ -40,9 +40,18 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --inp
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
   --outdir ${NFOutDir}results --with-tower \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --callers ivar 
+  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar 
 
 
+# variantDir=/mnt/sdo1/VariantProcessing/R003MP1A1_S1_L001/subset_clean_500000
+
+# nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input /tmp/Covid-R005_NFSamples_Local.csv \
+#   --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
+#   --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
+#   -profile docker --skip_assembly --min_mapped_reads 1000 \
+#   -w /tmp/work \
+#   --outdir /tmp/results/ \
+#   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --callers ivar
 #   ### To run nextflow locally for testing
 # nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
 #  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
@@ -51,10 +60,10 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --inp
 #   -w /tmp/workdir --outdir /tmp/results\
 #   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 
-#   nextflow run /tmp/viralrecon-dev/main.nf --input $NFSamplesFile  \
+#   nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
 #  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
 #  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
-#   -profile docker --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
+#   -profile docker --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es --callers ivar --align_unpaired\
 #   -w /tmp/workdir --outdir /tmp/results\
 #   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 # ### To run Nextclade to call mutations on sequences

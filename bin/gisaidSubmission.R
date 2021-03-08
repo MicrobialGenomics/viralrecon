@@ -7,7 +7,7 @@ if(is.na(args[1])){
 }
 
 ResultsFile=args[1]
-ResultsFile="~/Downloads/Covid-M001_Microbiologia_HUGTIP.csv"
+ResultsFile="~/Downloads/Covid-R005_ZooStudy-CRESA.csv"
 # ResultsFile="~/Downloads/COVID-P002_ZooStudy-CRESA.csv"
 GisaidSubmitRoot=gsub(".csv","",ResultsFile)
 GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
