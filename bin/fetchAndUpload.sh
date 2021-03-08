@@ -45,7 +45,7 @@ newProjectName=`grep $name $idCrossFile | awk '{print $2}'`
 else ##
 newProjectName=$name
 fi
-echo "passed the rubicon"
+echo "passed the rubicon with $newProjectName"
 
 ### Lists all projects to csv file, filtering by name
 ### redirect output to a filecan be useful to get project id
