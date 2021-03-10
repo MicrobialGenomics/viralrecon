@@ -7,7 +7,7 @@ if(is.na(args[1])){
 }
 
 ResultsFile=args[1]
-ResultsFile="~/Downloads/Covid-R005_ZooStudy-CRESA.csv"
+ResultsFile="~/Downloads/Covid-R006_Microbiologia_HUGTiP.csv"
 # ResultsFile="~/Downloads/COVID-P002_ZooStudy-CRESA.csv"
 GisaidSubmitRoot=gsub(".csv","",ResultsFile)
 GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
@@ -34,18 +34,28 @@ x <- c("Submitter", "FASTA filename", "Virus name","Type",
 colnames(outputDF) <- y
 # outputDF[1,]<-x
 
+DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
+
 gisaidType<-"betacoronavirus"
-gisaidSubmitter<-"mnoguera"
 gisaidSequencingTechnology<-"Illumina/MiSeq"
 gisaidAssemblyMethod<-"Viralrecon/iVar"
-gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll", "Roger Paredes", "Bonaventura Clotet",sep=", ")
-gisaidLocalAuthors<-iconv(gisaidLocalAuthors,from="UTF-8",to="UTF-8")
-gisaidSubmittingLab<-"IrsiCaixa - Can Ruti CovidSeq"
-gisaidSubmittingLabAddress<-"Fundació irsiCaixa. Hospital Universitari Germans Trias i Pujol(HUGTiP), 2a planta, maternal Ctra Canyet s/n, Badalona"
+if( unique(ResultsFile$StudyID) == "Microbiologia_HUGTiP" | unique(ResultsFile$StudyID)=="Micro_HUGTiP"){
+   gisaidLocalAuthors<-""
+   gisaidSubmittingLab<-"Hospital Universitari Germans Trias I Pujol (Can Ruti SARS-CoV-2 Sequencing Hub: HUGTiP/IrsiCaixa/IGTP)."
+   gisaidSubmittingLabAddress<-"Microbiology Department, Hospital Universitari Germans Trias i Pujol, 2a planta, maternal Ctra Canyet s/n, 08916 Badalona."
+   gisaidSubmitter<-"mnoguera"
+}else{
+   gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll", "Roger Paredes", "Bonaventura Clotet",sep=", ")
+   gisaidLocalAuthors<-iconv(gisaidLocalAuthors,from="UTF-8",to="UTF-8")
+   gisaidSubmittingLab<-"IrsiCaixa"
+   gisaidSubmittingLabAddress<-"Fundació irsiCaixa. Hospital Universitari Germans Trias i Pujol(HUGTiP), 2a planta, maternal Ctra Canyet s/n, Badalona"
+   gisaidSubmitter<-"mnoguera"
+}
+
 # gisaidSubmittingLabAddress<-iconv(gisaidSubmittingLabAddress,from="UTF-8",to="UTF-8")
 
-DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
-  system(paste("rm",GisaidSubmitFasta))
+
+ system(paste("rm",GisaidSubmitFasta))
 DF<-DF[! is.na(DF$qc.overallStatus),]
 DF$qc.overallStatus<-as.factor(DF$qc.overallStatus)
 DF[is.na(DF$treatment),"treatment"]<-"Unknown"
@@ -54,7 +64,8 @@ for (i in 1:nrow(DF)){
   ### Create a single file for sequences that pass the publishable criteria
   if((DF[i,"qc.overallStatus"]%in% c("good","mediocre")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
    print(DF[i,"qc.overallStatus"])
-   virus_name<-paste("hCoV-19/Spain/CT-IrsiCaixa",DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
+   idHeader<-ifelse(unique(ResultsFile$StudyID) == "Microbiologia_HUGTiP","hCoV-19/Spain/CT-HUGTiP","hCoV-19/Spain/CT-IrsiCaixa")
+   virus_name<-paste(idHeader,DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
    write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
    outputDF[i,"submitter"]<-gisaidSubmitter
    outputDF[i,"fn"]<-GisaidFastaFilename
