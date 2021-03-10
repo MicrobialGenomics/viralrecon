@@ -5,6 +5,10 @@
 # exampleResults/NFResults.csv @@@ Contains information obtained from Nextflow viralrecon run: Coverage, depth, sequence and intermediat file location
 # exampleResults/NextCladeSequences_output.csv @@@ Contains infromation obtained from NextClade Analysis including quality, mutations, and clade.
 
+require(aws.s3)
+require(tidyr)
+require(optparse)
+require(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -24,6 +28,8 @@ NFSamplesFile=paste0(localNFDir,"NFResults.csv")
 NCOutputFile=paste0(localNFDir,"NextCladeSequences_output.csv")
 PGOutputFile=paste0(localNFDir,"Pangolin_output.csv")
 MetadataFile="~/Downloads/Config_Run05032021.xlsx"
+
+
 
 
 #### Merge NextFlow and NextClade results with sample Data
