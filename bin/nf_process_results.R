@@ -9,9 +9,9 @@ library(optparse)
 connect_db <- function(dbname) {
     DBI::dbConnect(
         drv = RMySQL::MySQL(),
-        username = "admin",
-        password = "***REMOVED***",
-        host = "***REMOVED***",
+        username = Sys.getenv("mysql_user"),
+        password = Sys.getenv("mysql_pass"),
+        host = Sys.getenv("mysql_host"),
         port = 3306,
         dbname = dbname,
         ":memory:"
