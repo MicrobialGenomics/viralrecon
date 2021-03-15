@@ -1,5 +1,6 @@
 # Load libraries ----------------------------------------------------------
 library(tidyverse)
+library(stringi)
 library(DBI)
 library(dbplyr)
 library(RMySQL)
@@ -47,6 +48,9 @@ metadata <- dplyr::tbl(cn, "samples") %>%
     dplyr::left_join(dplyr::tbl(cn, "library_info"), by = "library_id") %>%
     dplyr::filter(run_id == run_name) %>%
     dplyr::collect() %>%
+    dplyr::mutate(across(everything(), function(x) {
+                    stri_encode(x, from = "ISO-8859-1", to = "latin1")
+    })) %>%
     dplyr::mutate(
         fastq_id = stringr::str_c(run_id, library_id, sep = "_"),
         .before = 1

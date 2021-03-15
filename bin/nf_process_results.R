@@ -1,5 +1,6 @@
 # Load libraries ----------------------------------------------------------
 library(tidyverse)
+library(stringi)
 library(DBI)
 library(dbplyr)
 library(RMySQL)
@@ -135,6 +136,9 @@ if (is.null(opt$metadata)) {
     metadata <- tbl(cn, "samples") %>%
         left_join(tbl(cn, "plate_design"), by = "s_idx") %>%
         left_join(tbl(cn, "library_info"), by = "library_id") %>%
+        mutate(across(everything(), function(x) {
+                    stri_encode(x, from = "ISO-8859-1", to = "latin1")
+        })) %>%
         collect() %>%
         filter(library_id %in% nfcore$library_id)
 } else {
