@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ### 2021-01-14 19:39:07 MNJ Will fetch fastq files from BaseSpace Project using Basespace reference and default credentials
 ### Will use BS CLI from https://developer.basespace.illumina.com/docs/content/documentation/cli/cli-overview
 
@@ -123,4 +123,14 @@ rm -rf /tmp/$projectString /tmp/${newProjectName}_samples.csv  /tmp/${newProject
 
 ### Can we run nextflow pipeline from here?
 /tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
+aws s3 cp /tmp/${newProjectName}_samples.csv ${s3Location}
 echo $s3Location
+
+
+### Running Nextflow
+. $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
+
+### Parse NextFlow Resucdlts
+. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
+
+#Rscript $MYDIR/NFProcessResults.R ${newProjectName} 

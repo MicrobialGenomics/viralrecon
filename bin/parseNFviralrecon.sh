@@ -88,6 +88,7 @@ aws s3 cp /tmp/${NFDirPath}/NFResults.csv ${NFOutDir}
 
 
 ### To run Nextclade to call mutations on sequences and signature mutation-based phylotyping
+docker pull neherlab/nextclade
 docker run -it --rm -u 1000 --volume="/tmp/${NFDirPath}/:/seq" \
 neherlab/nextclade nextclade --input-fasta '/seq/NextCladeSequences.fasta' \
 --output-csv='/seq/NextCladeSequences_output.csv'
@@ -96,8 +97,9 @@ aws s3 cp /tmp/${NFDirPath}/NextCladeSequences_output.csv ${NFOutDir}
 
 
 ### To run Pangolin for phylogenetic classification
+docker pull staphb/pangolin
 docker run -it --rm --volume="/tmp/${NFDirPath}/:/seq" \
-microbialgenomics/pangolin pangolin -o '/seq/lineage_report.csv' '/seq/NextCladeSequences.fasta' 
+staphb/pangolin pangolin -o '/seq/lineage_report.csv' '/seq/NextCladeSequences.fasta' 
 
 cp /tmp/${NFDirPath}/lineage_report.csv/lineage_report.csv /tmp/${NFDirPath}/Pangolin_output.csv
 aws s3 cp /tmp/${NFDirPath}/Pangolin_output.csv ${NFOutDir}
