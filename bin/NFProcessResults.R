@@ -95,7 +95,7 @@ gisaidProcess<-function(ResultsFile)
       outputDF[i,"covv_collection_date"]<-as.character(as.Date(DF[i,"collection_date"],"%Y-%m-%d"))
       ### Note that accents and others are remove from GISAID metadata. Consider use stringi::stri_trans_general
       ###stringr::str_to_title(textclean::replace_non_ascii(DF[i,"location"]))
-      outputDF[i,"covv_location"]<-as.character(paste("Europe","Spain","Catalunya",DF[i,"location"],sep=" / "))
+      outputDF[i,"covv_location"]<-as.character(paste("Europe","Spain","Catalunya",stringr::str_to_title(textclean::replace_non_ascii(DF[i,"location"])),sep=" / "))
       outputDF[i,"covv_add_location"]<-ifelse(is.na(DF[i,"location_comment"]),"",DF[i,"location_comment"])
       outputDF[i,"covv_host"]<-DF[i,"host"]
       outputDF[i,"covv_add_host_info"]<-ifelse(is.na(DF[i,"host_comment"]),"",DF[i,"host_comment"])
@@ -133,11 +133,11 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
-# projectString<-"2021-03-23_Covid-R008_238310072"
+ projectString<-"2021-03-25_Covid-M007_239054818"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
-# MetadataFile="~/Downloads/Config_Run19032021.xlsx"
+MetadataFile="~/Downloads/metadata_to_fetch_run_M007.csv"
 bucket <- "s3://***REMOVED***"
 
 ### Read Viralrecon output from S3.
@@ -190,36 +190,42 @@ NFNCDF<-merge(NFSamplesDF,NCOutputDF,all.x=TRUE,by="library_id")
 colnames(NFNCDF)
 NFNCPGDF<-merge(NFNCDF,PGOutputDF,all.x=T,by="library_id")
 
-MetadataDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=2)
-colnames(MetadataDF)
-colnames(MetadataDF)<-MetadataDF[1,]
-MetadataDF<-MetadataDF[-1,]
-colnames(MetadataDF)
-MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
+if(grepl(c(".xlsx",".xls"),MetadataFile)){
+  MetadataDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=2)
+  colnames(MetadataDF)
+  colnames(MetadataDF)<-MetadataDF[1,]
+  MetadataDF<-MetadataDF[-1,]
+  colnames(MetadataDF)
+  MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
+  LibraryIDDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=3)
+  colnames(LibraryIDDF)
+  colnames(LibraryIDDF)<-LibraryIDDF[1,]
+  LibraryIDDF<-LibraryIDDF[-1,]
+  colnames(LibraryIDDF)
+  LibraryIDDF<-LibraryIDDF[! rowSums(is.na(LibraryIDDF))==ncol(LibraryIDDF),]
+  LibraryIDDF[,"design_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"design_date"])))
+  LibraryIDDF[,"run_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"run_date"])))
 
-LibraryIDDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=3)
-colnames(LibraryIDDF)
-colnames(LibraryIDDF)<-LibraryIDDF[1,]
-LibraryIDDF<-LibraryIDDF[-1,]
-colnames(LibraryIDDF)
-LibraryIDDF<-LibraryIDDF[! rowSums(is.na(LibraryIDDF))==ncol(LibraryIDDF),]
-LibraryIDDF[,"design_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"design_date"])))
-LibraryIDDF[,"run_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"run_date"])))
+  ### re-polish sample_id and secondary_id
+  MetadataDF$sample_id<-gsub(" ","",MetadataDF$sample_id)
+  MetadataDF$secondary_id<-gsub(" ","",MetadataDF$secondary_id)
+  LibraryIDDF$sample_id<-gsub(" ","",LibraryIDDF$sample_id)
+  LibraryIDDF$secondary_id<-gsub(" ","",LibraryIDDF$secondary_id)
+  MetadataDF<-merge(MetadataDF,LibraryIDDF,by=c("sample_id","secondary_id"))
+  ### Polish encoding of accents and other shit
+  Encoding(MetadataDF$OriginatingLab[2])
+  MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
+  MetadataDF<-MetadataDF[,! colSums(is.na(MetadataDF))==nrow(MetadataDF)]
+  MetadataDF[,"collection_date"]<-as.character((openxlsx::convertToDate(MetadataDF[,"collection_date"]))) ### Date format forced in template screw import up
 
-### re-polish sample_id and secondary_id
-MetadataDF$sample_id<-gsub(" ","",MetadataDF$sample_id)
-MetadataDF$secondary_id<-gsub(" ","",MetadataDF$secondary_id)
-LibraryIDDF$sample_id<-gsub(" ","",LibraryIDDF$sample_id)
-LibraryIDDF$secondary_id<-gsub(" ","",LibraryIDDF$secondary_id)
+  MetadataDF$collection_date
+}else{
+  ### Reading from csv should be much easier
+  MetadataDF<-read.delim(MetadataFile,sep=";") %>%
+    dplyr::select(-library_id)%>%
+    dplyr::rename(library_id=fastq_id)
+}
 
-MetadataDF<-merge(MetadataDF,LibraryIDDF,by=c("sample_id","secondary_id"))
-### Polish encoding of accents and other shit
-Encoding(MetadataDF$OriginatingLab[2])
-MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
-MetadataDF<-MetadataDF[,! colSums(is.na(MetadataDF))==nrow(MetadataDF)]
-MetadataDF[,"collection_date"]<-as.character((openxlsx::convertToDate(MetadataDF[,"collection_date"]))) ### Date format forced in template screw import up
-
-MetadataDF$collection_date
 # MetadataDF$OriginatingLab<-iconv(MetadataDF$OriginatingLab,from="UTF-8",to="TRANSLIT")
 # MetadataDF$OriginatingLabAddress<-iconv(MetadataDF$OriginatingLabAddress,from="UTF-8",to="UTF-8")
 # MetadataDF$OriginatingLabAuthors<-iconv(MetadataDF$OriginatingLabAuthors,from="UTF-8",to="UTF-8")
