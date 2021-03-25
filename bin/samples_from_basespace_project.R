@@ -52,7 +52,7 @@ metadata <- dplyr::tbl(cn, "samples") %>%
                     stri_encode(x, from = "ISO-8859-1", to = "latin1")
     })) %>%
     dplyr::mutate(
-        fastq_id = stringr::str_c(run_id, library_id, sep = "_"),
+        fastq_id = stringr::str_c(run_id, library_id, sep = ""),
         .before = 1
     ) %>%
     readr::write_delim(

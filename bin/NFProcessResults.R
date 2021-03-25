@@ -7,46 +7,184 @@
 
 require(aws.s3)
 require(tidyr)
+require(tidyverse)
 require(optparse)
 require(stringr)
+require(dplyr)
+
+
+### GISAID Uploader
+args = commandArgs(trailingOnly=TRUE)
+
+if(is.na(args[1])){
+  print("You need to specify a result file containing data needes by gisaid in the specified coding")
+  print("Metadata file needs to include library_id, at least")
+}
+
+gisaidProcess<-function(ResultsFile)
+{
+  GisaidSubmitRoot=gsub(".csv","",ResultsFile)
+  GisaidSubmitFasta=paste(GisaidSubmitRoot,"_gisaid.fasta",sep="")
+  GisaidFastaFilename=basename(GisaidSubmitFasta)
+  GisaidSubmitCsv=paste(GisaidSubmitRoot,"_gisaid.csv",sep="")
+
+  outputDF <- data.frame(matrix(ncol = 29, nrow = 0))
+  y<-c("submitter","fn","covv_virus_name","covv_type","covv_passage","covv_collection_date",
+       "covv_location","covv_add_location","covv_host","covv_add_host_info","covv_gender",
+       "covv_patient_age","covv_patient_status","covv_specimen","covv_outbreak","covv_last_vaccinated",
+       "covv_treatment","covv_seq_technology","covv_assembly_method","covv_coverage","covv_orig_lab","covv_orig_lab_addr",
+       "covv_provider_sample_id","covv_subm_lab","covv_subm_lab_addr","covv_subm_sample_id","covv_authors","covv_comment","comment_type")
+
+
+  x <- c("Submitter", "FASTA filename", "Virus name","Type",
+         "Passage details/history","Collection date","Location",
+         "Additional location information","Host","Additional host information",
+         "Gender","Patient age","Patient status","Specimen source",
+         "Outbreak","Last vaccinated","Treatment","Sequencing technology",
+         "Assembly method","Coverage","Originating lab","Address",
+         "Sample ID given by the sample provider","Submitting lab",
+         "Address","Sample ID given by the submitting laboratory",
+         "Authors","","")
+  colnames(outputDF) <- y
+  # outputDF[1,]<-x
+
+  DF<-read.csv(ResultsFile,fileEncoding = "UTF-8",sep=";")
+
+  gisaidType<-"betacoronavirus"
+  gisaidSequencingTechnology<-"Illumina/MiSeq"
+  gisaidAssemblyMethod<-"Viralrecon/iVar"
+  if( unique(DF$StudyID) == "Microbiologia_HUGTiP" | unique(DF$StudyID)=="Micro_HUGTiP"){
+    gisaidLocalAuthors<-""
+    gisaidSubmittingLab<-"Can Ruti SARS-CoV-2 Sequencing Hub (HUGTiP/IrsiCaixa/IGTP)"
+    gisaidSubmittingLabAddress<-"Hospital Universitari Germans Trias i Pujol, 2a planta maternal, Ctra Canyet s/n, 08916 Badalona, Catalonia, Spain."
+    gisaidSubmitter<-"mnoguera"
+  }else{
+    gisaidLocalAuthors<-paste("Marc Noguera-Julian","Mariona Parera","Maria Casadellà", "Pilar Armengol", "Francesc Catala-Moll", "Roger Paredes", "Bonaventura Clotet",sep=", ")
+    gisaidLocalAuthors<-iconv(gisaidLocalAuthors,from="UTF-8",to="UTF-8")
+    gisaidSubmittingLab<-"IrsiCaixa"
+    gisaidSubmittingLabAddress<-"Fundació irsiCaixa. Hospital Universitari Germans Trias i Pujol(HUGTiP), 2a planta, maternal Ctra Canyet s/n, Badalona"
+    gisaidSubmitter<-"mnoguera"
+  }
+
+  # gisaidSubmittingLabAddress<-iconv(gisaidSubmittingLabAddress,from="UTF-8",to="UTF-8")
+
+
+  system(paste("rm",GisaidSubmitFasta))
+  DF<-DF[! is.na(DF$qc.overallStatus),]
+  DF$qc.overallStatus<-as.factor(DF$qc.overallStatus)
+  DF[is.na(DF$treatment),"treatment"]<-"Unknown"
+  DF[is.na(DF$host_comment),"host_comment"]<-"--"
+  if(is.null(DF$location_comment)){
+    DF$location_comment<-NA
+  }
+  if(is.null(DF$patient_status)){
+    DF$patient_status<-NA
+  }
+  for (i in 1:nrow(DF)){
+    ### Create a single file for sequences that pass the publishable criteria
+    if((as.character(DF[i,"qc.overallStatus"]) %in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
+      print(DF[i,"qc.overallStatus"])
+      idHeader<-ifelse(unique(DF$StudyID) == "Microbiologia_HUGTiP","hCoV-19/Spain/CT-HUGTiP","hCoV-19/Spain/CT-IrsiCaixa")
+      virus_name<-paste(idHeader,DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
+      write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
+      outputDF[i,"submitter"]<-gisaidSubmitter
+      outputDF[i,"fn"]<-GisaidFastaFilename
+      outputDF[i,"covv_virus_name"]<-virus_name
+      outputDF[i,"covv_type"]<-gisaidType
+      outputDF[i,"covv_passage"]<-as.character(DF[i,"passage_details"])
+      outputDF[i,"covv_collection_date"]<-as.character(as.Date(DF[i,"collection_date"],"%Y-%m-%d"))
+      ### Note that accents and others are remove from GISAID metadata. Consider use stringi::stri_trans_general
+      ###stringr::str_to_title(textclean::replace_non_ascii(DF[i,"location"]))
+      outputDF[i,"covv_location"]<-as.character(paste("Europe","Spain","Catalunya",DF[i,"location"],sep=" / "))
+      outputDF[i,"covv_add_location"]<-ifelse(is.na(DF[i,"location_comment"]),"",DF[i,"location_comment"])
+      outputDF[i,"covv_host"]<-DF[i,"host"]
+      outputDF[i,"covv_add_host_info"]<-ifelse(is.na(DF[i,"host_comment"]),"",DF[i,"host_comment"])
+      outputDF[i,"covv_gender"]<-DF[i,"gender"]
+      outputDF[i,"covv_patient_age"]<-DF[i,"age"]
+      outputDF[i,"covv_patient_status"]<-ifelse(is.na(DF[i,"patient_status"]),"Unknown",DF[i,"patient_status"]) ### Use Unknown
+      outputDF[i,"covv_specimen"]<-DF[i,"source"]
+      outputDF[i,"covv_outbreak"]<-DF[i,"outbreak"]
+      outputDF[i,"covv_last_vaccinated"]<-ifelse(is.na(DF[i,"vaccinated"]),"",DF[i,"vaccinated"])
+      outputDF[i,"covv_treatment"]<-ifelse(is.na(DF[i,"treatment"]),"",DF[i,"treatment"])
+      outputDF[i,"covv_seq_technology"]<-gisaidSequencingTechnology
+      outputDF[i,"covv_assembly_method"]<-gisaidAssemblyMethod
+      outputDF[i,"covv_coverage"]<-DF[i,"DepthOfCov"]
+      outputDF[i,"covv_orig_lab"]<-DF[i,"OriginatingLab"]
+      outputDF[i,"covv_orig_lab_addr"]<-DF[i,"OriginatingLabAddress"]
+      outputDF[i,"covv_provider_sample_id"]<-DF[i,"sample_id"]
+      outputDF[i,"covv_subm_lab"]<-gisaidSubmittingLab
+      outputDF[i,"covv_subm_lab_addr"]<-gisaidSubmittingLabAddress
+      outputDF[i,"covv_subm_sample_id"]<-DF[i,"library_id"]
+      outputDF[i,"covv_authors"]<-paste(gisaidLocalAuthors,DF[i,"OriginatingLabAuthors"])
+      outputDF[i,"covv_comment"]<-""
+      outputDF[i,"comment_type"]<-""
+    }
+  }
+  outputDF<-outputDF[! rowSums(is.na(outputDF))==ncol(outputDF),]
+  write.csv(outputDF,file=GisaidSubmitCsv,row.names = F,fileEncoding = "UTF-8")
+  DF$passage_details
+}
 
 args = commandArgs(trailingOnly=TRUE)
 
-if(is.na(args[4])){
+if(is.na(args[1])){
   print("You need to specify NFSamplesFile NextCladeOutputFile MetadataFile all in csv format.")
   print("Metadata file needs to include library_id, at least")
 }
 
-NFSamplesFile=args[1]
-NCOutputFile=args[2]
-MetadataFile=args[3]
-PGOutputFile=args[4]
-projectID=args[5]
-projectID="Covid-R006"
-localNFDir="/tmp/2021-03-08_Covid-R006_235127893/"
-NFSamplesFile=paste0(localNFDir,"NFResults.csv")
-NCOutputFile=paste0(localNFDir,"NextCladeSequences_output.csv")
-PGOutputFile=paste0(localNFDir,"Pangolin_output.csv")
-MetadataFile="~/Downloads/Config_Run05032021.xlsx"
+projectString<-args[1]
+# projectString<-"2021-03-23_Covid-R008_238310072"
+projectID<-strsplit(projectString,"_")
+projectID<-projectID[[1]][2]
+MetadataFile=args[2]
+# MetadataFile="~/Downloads/Config_Run19032021.xlsx"
+bucket <- "s3://covidseq-14012021-eu-west-1"
 
+### Read Viralrecon output from S3.
+s3NFOutput <- bucket %>%
+  aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+  filter(str_detect(Key, projectString)) %>%
+  filter(str_detect(Key, "NFResults.csv" ))
+NFSamplesDF<-s3NFOutput %>%
+  pull(Key) %>%
+  aws.s3::s3read_using(object=.,
+                       FUN=readr::read_csv,
+                       col_type=cols(),
+                       bucket=bucket)
 
+print(nrow(NFSamplesDF))
+
+#### Read Pangoling from S3
+s3PGOutput <- bucket %>%
+  aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+  filter(str_detect(Key, projectString)) %>%
+  filter(str_detect(Key, "Pangolin_output.csv" ))
+PGOutputDF<-s3PGOutput%>%
+  pull(Key) %>%
+  aws.s3::s3read_using(object = .,
+                       FUN = readr::read_csv,
+                       col_types = cols(),
+                       bucket = bucket,) %>%
+  dplyr::rename(library_id = taxon)
+
+print(nrow(PGOutputDF))
+### Read NextClade from S3.
+s3NCOutput <-  bucket %>%
+  aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+  filter(str_detect(Key, projectString)) %>%
+  filter(str_detect(Key, "NextCladeSequences_output.csv" ))
+NCOutputDF<-s3NCOutput%>%
+  pull(Key) %>%
+  aws.s3::s3read_using(object = .,
+                       FUN = readr::read_delim,
+                       delim = ";",
+                       col_types = cols(),
+                       bucket = bucket) %>%
+  dplyr::rename(library_id=seqName)
+print(nrow(NCOutputDF))
 
 
 #### Merge NextFlow and NextClade results with sample Data
-
-NFSamplesDF<-read.delim(file=NFSamplesFile,sep=",",header=F)
-colnames(NFSamplesDF)<-NFSamplesDF[1,]
-colnames(NFSamplesDF)
-NFSamplesDF<-NFSamplesDF[-1,]
-
-NCOutputDF<-read.table(file=NCOutputFile,sep=";")
-colnames(NCOutputDF)<-NCOutputDF[1,]
-NCOutputDF<-NCOutputDF[-1,]
-colnames(NCOutputDF)[1]<-"library_id"
-colnames(NCOutputDF)
-
-PGOutputDF<-read.table(file=PGOutputFile,sep=",")
-colnames(PGOutputDF)<-c("library_id","pangolin_lineage","pangolin_probability","pangoLEARN_version","pangolin_status","pangolin_note")
 
 NFNCDF<-merge(NFSamplesDF,NCOutputDF,all.x=TRUE,by="library_id")
 colnames(NFNCDF)
@@ -57,11 +195,30 @@ colnames(MetadataDF)
 colnames(MetadataDF)<-MetadataDF[1,]
 MetadataDF<-MetadataDF[-1,]
 colnames(MetadataDF)
+MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
+
+LibraryIDDF<-xlsx::read.xlsx(MetadataFile,encoding = "UTF-8",sheetIndex=3)
+colnames(LibraryIDDF)
+colnames(LibraryIDDF)<-LibraryIDDF[1,]
+LibraryIDDF<-LibraryIDDF[-1,]
+colnames(LibraryIDDF)
+LibraryIDDF<-LibraryIDDF[! rowSums(is.na(LibraryIDDF))==ncol(LibraryIDDF),]
+LibraryIDDF[,"design_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"design_date"])))
+LibraryIDDF[,"run_date"]<-as.character((openxlsx::convertToDate(LibraryIDDF[,"run_date"])))
+
+### re-polish sample_id and secondary_id
+MetadataDF$sample_id<-gsub(" ","",MetadataDF$sample_id)
+MetadataDF$secondary_id<-gsub(" ","",MetadataDF$secondary_id)
+LibraryIDDF$sample_id<-gsub(" ","",LibraryIDDF$sample_id)
+LibraryIDDF$secondary_id<-gsub(" ","",LibraryIDDF$secondary_id)
+
+MetadataDF<-merge(MetadataDF,LibraryIDDF,by=c("sample_id","secondary_id"))
 ### Polish encoding of accents and other shit
 Encoding(MetadataDF$OriginatingLab[2])
 MetadataDF<-MetadataDF[! rowSums(is.na(MetadataDF))==ncol(MetadataDF),]
 MetadataDF<-MetadataDF[,! colSums(is.na(MetadataDF))==nrow(MetadataDF)]
 MetadataDF[,"collection_date"]<-as.character((openxlsx::convertToDate(MetadataDF[,"collection_date"]))) ### Date format forced in template screw import up
+
 MetadataDF$collection_date
 # MetadataDF$OriginatingLab<-iconv(MetadataDF$OriginatingLab,from="UTF-8",to="TRANSLIT")
 # MetadataDF$OriginatingLabAddress<-iconv(MetadataDF$OriginatingLabAddress,from="UTF-8",to="UTF-8")
@@ -83,6 +240,8 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
   #Use ; for FS because mutation list have ","
   write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
+  gisaidProcess(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""))
+  xlsx::write.xlsx(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".xlsx",sep=""),row.names = F)
 }
 
 ### Keep track of study specific fasta files. These may be handy for internal result reporting.
