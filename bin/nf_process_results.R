@@ -226,12 +226,13 @@ if (opt$ingest_sql == "true") {
 
     pangolin %>% ingest_db("pangolin", cn = cn)
 
-    nfcore %>%
-        select(library_id) %>%
-        mutate(sample_status = "sequenced") %>%
-        sql_update_table(pk_cols = "library_id",
-                         table_name = "sample_status",
-                         dbname = opt$dbname)
+    #### To uncomment when all samples are in DB
+    # nfcore %>%
+    #     select(library_id) %>%
+    #     mutate(sample_status = "sequenced") %>%
+    #     sql_update_table(pk_cols = "library_id",
+    #                      table_name = "sample_status",
+    #                      dbname = opt$dbname)
 }
 
 # Extracted Elsewhere

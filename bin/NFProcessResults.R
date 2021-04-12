@@ -255,9 +255,19 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
   #Use ; for FS because mutation list have ","
   write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
+  #Upload to s3
+  myFileObject<-paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep="")
+  put_object(myFileObject,paste("Runs/",projectString,projectID,"_",study,".csv",sep=""),bucket,multipart=T)
+  ## Generate GISAID files
   gisaidProcess(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""))
+
+  #Generate XLS files
   xlsx::write.xlsx(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".xlsx",sep=""),row.names = F)
+  #Upload to s3
+  myFileObject<-paste("/Users/mnoguera/Downloads/",projectID,"_",study,".xlsx",sep="")
+  put_object(myFileObject,paste("Runs/",projectString,projectID,"_",study,".xlsx",sep=""),bucket,multipart=T)
 }
+
 
 ### Keep track of study specific fasta files. These may be handy for internal result reporting.
 for(study in levels(MetadataNFNCDF$StudyID)){
@@ -275,4 +285,5 @@ for(study in levels(MetadataNFNCDF$StudyID)){
 write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 #### Produce files for GISAID batch upload
 
+put_object(myUpdateAggregated,paste("Runs/UpdatedData/Updated_",Sys.Date(),"_updated.csv",sep=""),bucket,multipart=T)
 
