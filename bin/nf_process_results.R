@@ -119,12 +119,12 @@ if (!opt$ingest_sql %in% c("true", "false")) {
     message("ingest_sql must be true or false")
 }
 
-if( ! is.null(opt$s3Dir) ){
+if(!is.null(opt$s3Dir)) {
     bucket <- "s3://covidseq-14012021-eu-west-1"
     ### Going to guess File locations from s3 path
     projectString <- opt$s3Dir
     s3NFOutput <- bucket %>%
-        aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+        aws.s3::get_bucket_df(prefix = paste("Runs/", projectString, sep = "")) %>%
         filter(str_detect(Key, projectString)) %>%
         filter(str_detect(Key, "NFResults.csv" ))
 
