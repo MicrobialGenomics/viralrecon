@@ -207,12 +207,11 @@ if (is.null(opt$metadata)) {
         dplyr::mutate(across(everything(), function(x) {
             stri_encode(x, from = "ISO-8859-1", to = "latin1")
         })) %>%
-        collect() %>%
-        filter(library_id %in% nfcore$library_id)
+        dplyr::filter(library_id %in% nfcore$library_id)
 } else {
     metadata <- opt$metadata %>%
         readr::read_csv() %>%
-        filter(library_id %in% nfcore$library_id)
+        dplyr::filter(library_id %in% nfcore$library_id)
 }
 
 # Merge -------------------------------------------------------------------
