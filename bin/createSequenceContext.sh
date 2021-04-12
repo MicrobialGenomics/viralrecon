@@ -27,7 +27,7 @@ GisaidBlasts3File="/tmp/GisaidBlasts3Files.txt"
 aws s3 ls s3://covidseq-14012021-eu-west-1/GISAID/BlastDB/ | awk '{print $4}' | grep $dateString > $GisaidBlasts3File
 
 ### Does the blast index corresponding to this file exist in /tmp?
-if [ -e ${GisaidBlastTmpFile}.00.nin ]
+if [ -e ${GisaidBlastTmpFile}.nal ]
     then 
     echo "Local Blast index of latest GISAID dump is found, going to use it"
 ### Does the blast index corresponding to this file exist in s3?
@@ -43,20 +43,22 @@ elif [  -s $GisaidBlasts3File ]
 elif [  -e  $GisaidFastaTmpFile  ]
 then 
     echo "GISAID local file existst at $GisaidFastaTmpFile for $dateString"
-    gzip -d -c $GisaidFastaTmpFile | makeblastdb -in - -dbtype nucl -out ${GisaidFastaTmpFile%%.gz} -title $dateString
+    gzip -d -c $GisaidFastaTmpFile | makeblastdb -in - -dbtype nucl -out ${GisaidFastaTmpFile%%.gz} -title ${GisaidFastaTmpFile%%.gz}
     for file in ${GisaidFastaTmpFile%%.gz}.*.n*
     do 
       aws s3 cp $file ${CovidBucket}GISAID/BlastDB/ 
     done
+    aws s3 cp ${GisaidFastaTmpFile%%.gz}.nal ${CovidBucket}GISAID/BlastDB/ 
 ### If the file is not found locally we'll need to download it as well and index it as well.
 elif [[ ! -e $GisaidFastaTmpFile ]]
 then 
     aws s3 cp ${CovidBucket}GISAID/DataFiles/$GisaidFastaFile /tmp 
-    gzip -d -c $GisaidFastaTmpFile | makeblastdb -in - -dbtype nucl -out ${GisaidFastaTmpFile%%.gz}
+    gzip -d -c $GisaidFastaTmpFile | makeblastdb -in - -dbtype nucl -out ${GisaidFastaTmpFile%%.gz} -title ${GisaidFastaTmpFile%%.gz}
     for file in ${GisaidFastaTmpFile%%.gz}.*.n*
     do 
       aws s3 cp $file ${CovidBucket}GISAID/BlastDB/ 
     done
+    aws s3 cp ${GisaidFastaTmpFile%%.gz} ${CovidBucket}GISAID/BlastDB/ 
 fi
 
 ### Either way we should have a blast index in /tmp named ${GisaidFastaTmpFile%%.gz}
@@ -79,12 +81,12 @@ seqkit stats $filename
 echo "Running Blast for 10 Sequences" 
 blastn -db ${GisaidFastaTmpFile%%.gz} -max_hsps 1 -num_threads 4 -max_target_seqs 10 -out ${filename%%.fasta}_blastOut10.txt -outfmt 6 -query ${filename}
 cat ${filename%%.fasta}_blastOut10.txt | awk '{print $2}' > ${filename%%.fasta}_blastSeqs10.txt
-seqkit grep -f ${filename%%.fasta}_blastSeqs10.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs10.fasta
-
-aws s3 ${filename%%.fasta}_blastSeqs10.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/
+seqkit grep -f ${filename%%.fasta}_blastSeqs10.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs10_$dateString.fasta
+rm ${filename%%.fasta}_blastOut10.txt  ${filename%%.fasta}_blastSeqs10.txt
+aws s3 cp ${filename%%.fasta}_blastSeqs10_$dateString.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/
 
 blastn -db ${GisaidFastaTmpFile%%.gz} -max_hsps 1 -num_threads 4 -max_target_seqs 50 -out ${filename%%.fasta}_blastOut50.txt -outfmt 6 -query ${filename}
 cat ${filename%%.fasta}_blastOut50.txt | awk '{print $2}' > ${filename%%.fasta}_blastSeqs50.txt
-seqkit grep -f ${filename%%.fasta}_blastSeqs50.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs50.fasta
-
-aws s3 ${filename%%.fasta}_blastSeqs50.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/
+seqkit grep -f ${filename%%.fasta}_blastSeqs50.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs50_$dateString.fasta
+rm ${filename%%.fasta}_blastOut50.txt  ${filename%%.fasta}_blastSeqs50.txt
+aws s3 cp ${filename%%.fasta}_blastSeqs50_$dateString.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/

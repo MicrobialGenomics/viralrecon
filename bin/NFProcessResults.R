@@ -84,7 +84,15 @@ gisaidProcess<-function(ResultsFile)
     ### Create a single file for sequences that pass the publishable criteria
     if((as.character(DF[i,"qc.overallStatus"]) %in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
       print(DF[i,"qc.overallStatus"])
-      idHeader<-ifelse(unique(DF$StudyID) == "Microbiologia_HUGTiP","hCoV-19/Spain/CT-HUGTiP","hCoV-19/Spain/CT-IrsiCaixa")
+      if(unique(DF$StudyID) == "Microbiologia_HUGTiP"){
+        idHeader<-"hCoV-19/Spain/CT-HUGTiP"
+      }else if (grepl("CRESA",unique(DF$StudyID))){
+        idHeader<-paste("hCoV-19/Spain/CT-",as.character(DF[i,"GISAID_label"]),"-",as.character(DF[i,"sample_id"]),"-IrsiCaixa",sep="")
+      }else{
+        idHeader<-"hCoV-19/Spain/CT-IrsiCaixa"
+      }
+      print(idHeader)
+      # idHeader<-ifelse(unique(DF$StudyID) == "Microbiologia_HUGTiP","hCoV-19/Spain/CT-HUGTiP","hCoV-19/Spain/CT-IrsiCaixa")
       virus_name<-paste(idHeader,DF[i,"library_id"],"/",format(as.Date(DF[i,"collection_date"]),"%Y"),sep="")
       write(paste(">",virus_name,"\n",DF[i,"FastqSequence"],sep=""),file=GisaidSubmitFasta,append=T)
       outputDF[i,"submitter"]<-gisaidSubmitter
@@ -133,11 +141,12 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
- projectString<-"2021-03-25_Covid-M007_239054818"
+# projectString<-"2021-04-06_Covid-R010_241961723"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
-MetadataFile="~/Downloads/metadata_to_fetch_run_M007.csv"
+# MetadataFile="~/Downloads/Config_RunLleons.xlsx"
+# MetadataFile="~/Downloads/metadata_to_fetch_run_R010.csv"
 bucket <- "s3://covidseq-14012021-eu-west-1"
 
 ### Read Viralrecon output from S3.
