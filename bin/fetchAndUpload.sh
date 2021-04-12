@@ -37,6 +37,11 @@ samplesFile=$2 || echo "Metadata file not defined, will process all samples"
 idCrossFile=$3 || echo "No ID CorssFile passed as argument, filenames will need to match library_id"
 
 echo "idCrossFile is: $idCrossFile"
+run_id=`echo $name | sed s/Covid-//`
+echo "Querying database with $run_id"
+/usr/local/bin/Rscript $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
+samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
+
 ### Behaviour: If Id cross File is not provided $name variable will be used throughout and needs to correspond to the basespace project
 ### Otherwise: $name variable will only be used to retrieve samples, but $newProjectName will be used for further labeling
 if [ ! -z "$3" ] ### If variable is set
@@ -47,7 +52,6 @@ newProjectName=$name
 fi
 echo "passed the rubicon with $newProjectName"
 
-break
 ### Lists all projects to csv file, filtering by name
 ### redirect output to a filecan be useful to get project id
 bs list projects --filter-term=$name -f csv > /tmp/${newProjectName}_project.csv
@@ -73,14 +77,14 @@ then
         filename=${file##*/}
         filedir=`dirname $file`
         samplename=${filename%%_S*}
-        newSampleName=`fgrep $samplename $idCrossFile | awk '{print $2}'`
+        newSampleName=`fgrep $samplename $idCrossFile | head -n 1 | awk '{print $2}'`
         newFileName=`echo $filename | sed s/$samplename/$newSampleName/`
         echo "New file is $newFile, moving from $file"
         mv $file ${filedir}/${newFileName}
     done
 fi
 echo "Finished renaming or not"
-break
+
 ### Will then upload files to s3 using bucket specified as parameter with directory name
 ### AWS:s3 credentials will use either IAM or .aws/credentials file.
 ### Will (optionally) populate database with information about fastq files and Project run
@@ -127,10 +131,14 @@ aws s3 cp /tmp/${newProjectName}_samples.csv ${s3Location}
 echo $s3Location
 
 
-### Running Nextflow
+# ### Running Nextflow
 . $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
 
-### Parse NextFlow Resucdlts
+# ### Parse NextFlow Resucdlts
 . $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
 
-#Rscript $MYDIR/NFProcessResults.R ${newProjectName} 
+/usr/local/bin/Rscript $MYDIR/NFProcessResults.R $projectString $samplesFile
+
+### Insert results into DB, using ViralRecon, NextClade i Pangolin.
+
+#gisaid_uploader -a ./gisaid_uploader.authtoken CoV upload --fasta ~/Downloads/Covid-R008_Althaia_gisaid.fasta --csv ~/Downloads/Covid-R008_Althaia_gisaid.csv > ~/Downloads/Covid-R008_Althaia_gisaidUpload.txt
