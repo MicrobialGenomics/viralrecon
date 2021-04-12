@@ -122,50 +122,59 @@ if (!opt$ingest_sql %in% c("true", "false")) {
 if( ! is.null(opt$s3Dir) ){
     bucket <- "s3://***REMOVED***"
     ### Going to guess File locations from s3 path
-    projectString<-opt$s3Dir
+    projectString <- opt$s3Dir
     s3NFOutput <- bucket %>%
         aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
         filter(str_detect(Key, projectString)) %>%
         filter(str_detect(Key, "NFResults.csv" ))
-    nfcore<-s3NFOutput %>%
-        pull(Key) %>%
-        aws.s3::s3read_using(object=.,
-                             FUN=readr::read_csv,
-                             col_type=cols(),
-                             bucket=bucket)
 
+    nfcore <- s3NFOutput %>%
+        pull(Key) %>%
+        aws.s3::s3read_using(
+            object = .,
+            FUN = readr::read_csv,
+            col_type = cols(),
+            bucket = bucket
+        )
     print(nrow(nfcore))
 
     #### Read Pangoling from S3
     s3PGOutput <- bucket %>%
-        aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+        aws.s3::get_bucket_df(prefix = paste("Runs/", projectString, sep = "")) %>%
         filter(str_detect(Key, projectString)) %>%
         filter(str_detect(Key, "Pangolin_output.csv" ))
-    pangolin<-s3PGOutput%>%
-        pull(Key) %>%
-        aws.s3::s3read_using(object = .,
-                             FUN = readr::read_csv,
-                             col_types = cols(),
-                             bucket = bucket,) %>%
-        dplyr::rename(library_id = taxon)
 
-    print(nrow(pangolin))
-    ### Read NextClade from S3.
-    s3NCOutput <-  bucket %>%
-        aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
-        filter(str_detect(Key, projectString)) %>%
-        filter(str_detect(Key, "NextCladeSequences_output.csv" ))
-    nextclade<-s3NCOutput%>%
+    pangolin <- s3PGOutput %>%
         pull(Key) %>%
-        aws.s3::s3read_using(object = .,
-                             FUN = readr::read_delim,
-                             delim = ";",
-                             col_types = cols(),
-                             bucket = bucket) %>%
-        dplyr::rename(library_id=seqName)
+        aws.s3::s3read_using(
+            object = .,
+            FUN = readr::read_csv,
+            col_types = cols(),
+            bucket = bucket,
+        ) %>%
+        dplyr::rename(library_id = taxon)
+    print(nrow(pangolin))
+
+    ### Read NextClade from S3.
+    s3NCOutput <- bucket %>%
+        aws.s3::get_bucket_df(prefix = paste("Runs/", projectString, sep = "")) %>%
+        filter(str_detect(Key, projectString)) %>%
+        filter(str_detect(Key, "NextCladeSequences_output.csv"))
+
+    nextclade <- s3NCOutput %>%
+        pull(Key) %>%
+        aws.s3::s3read_using(
+            object = .,
+            FUN = readr::read_delim,
+            delim = ";",
+            col_types = cols(),
+            bucket = bucket
+        ) %>%
+        dplyr::rename(library_id = seqName)
     print(nrow(nextclade))
 
-}else if(all(file.exists(opt$viralrecon, opt$nextclade, opt$pangolin))){
+} else if (all(file.exists(opt$viralrecon, opt$nextclade, opt$pangolin))) {
+
     # Load file result data ---------------------------------------------------
     nfcore <- opt$viralrecon %>%
         read_delim(delim = ",") %>%
@@ -178,21 +187,17 @@ if( ! is.null(opt$s3Dir) ){
     pangolin <- opt$pangolin %>%
         read_delim(delim = ",") %>%
         rename(library_id = taxon)
-}else{
-    break("No input available")
-}
 
-
-
+} else { break("No input available") }
 
 # Extract metadata from database ------------------------------------------
 cn <- connect_db(dbname = opt$dbname)
 on.exit(DBI::dbDisconnect(cn))
 
 ### Reformat library_id for coherence into database
-nfcore$library_id<-substr(nfcore$library_id,5,length(nfcore$library_id))
-pangolin$library_id<-substr(pangolin$library_id,5,length(pangolin$library_id))
-nextclade$library_id<-substr(nextclade$library_id,5,length(nextclade$library_id))
+nfcore$library_id <- substr(nfcore$library_id, 5, length(nfcore$library_id))
+pangolin$library_id <- substr(pangolin$library_id, 5, length(pangolin$library_id))
+nextclade$library_id <- substr(nextclade$library_id, 5, length(nextclade$library_id))
 
 if (is.null(opt$metadata)) {
     metadata <- dplyr::tbl(cn, "samples") %>%
