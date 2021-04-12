@@ -21,3 +21,4 @@ bin/gisaid_uploader*
 gisaid_uploader*
 exampleResults/*
 
+.Rproj.user
