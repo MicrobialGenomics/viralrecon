@@ -1,5 +1,6 @@
 # Load libraries ----------------------------------------------------------
 library(tidyverse)
+library(stringi)
 library(DBI)
 library(dbplyr)
 library(RMySQL)
@@ -9,9 +10,9 @@ library(optparse)
 connect_db <- function(dbname) {
     DBI::dbConnect(
         drv = RMySQL::MySQL(),
-        username = "admin",
-        password = "***REMOVED***",
-        host = "***REMOVED***",
+        username = Sys.getenv("mysql_user"),
+        password = Sys.getenv("mysql_pass"),
+        host = Sys.getenv("mysql_host"),
         port = 3306,
         dbname = dbname,
         ":memory:"
@@ -47,8 +48,11 @@ metadata <- dplyr::tbl(cn, "samples") %>%
     dplyr::left_join(dplyr::tbl(cn, "library_info"), by = "library_id") %>%
     dplyr::filter(run_id == run_name) %>%
     dplyr::collect() %>%
+    dplyr::mutate(across(everything(), function(x) {
+                    stri_encode(x, from = "ISO-8859-1", to = "latin1")
+    })) %>%
     dplyr::mutate(
-        fastq_id = stringr::str_c(run_id, library_id, sep = "_"),
+        fastq_id = stringr::str_c(run_id, library_id, sep = ""),
         .before = 1
     ) %>%
     readr::write_delim(
