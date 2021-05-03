@@ -28,6 +28,8 @@ gisaidProcess<-function(ResultsFile)
   GisaidFastaFilename=basename(GisaidSubmitFasta)
   GisaidSubmitCsv=paste(GisaidSubmitRoot,"_gisaid.csv",sep="")
 
+  bucket <- "s3://***REMOVED***"
+
   outputDF <- data.frame(matrix(ncol = 29, nrow = 0))
   y<-c("submitter","fn","covv_virus_name","covv_type","covv_passage","covv_collection_date",
        "covv_location","covv_add_location","covv_host","covv_add_host_info","covv_gender",
@@ -74,6 +76,7 @@ gisaidProcess<-function(ResultsFile)
   DF$qc.overallStatus<-as.factor(DF$qc.overallStatus)
   DF[is.na(DF$treatment),"treatment"]<-"Unknown"
   DF[is.na(DF$host_comment),"host_comment"]<-"--"
+  DF[is.na(DF$AnalysisComments),"AnalysisComments"]<-"NA"
   if(is.null(DF$location_comment)){
     DF$location_comment<-NA
   }
@@ -82,7 +85,7 @@ gisaidProcess<-function(ResultsFile)
   }
   for (i in 1:nrow(DF)){
     ### Create a single file for sequences that pass the publishable criteria
-    if((as.character(DF[i,"qc.overallStatus"]) %in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"]))){
+    if((as.character(DF[i,"qc.overallStatus"]) %in% c("good","mediocre","bad")) & (DF[i,"PercCov"]>=80) & ( ! is.na(DF[i,"collection_date"])) & ( ! str_detect(DF[i,"AnalysisComments"], regex("control", ignore_case = TRUE)))){
       print(DF[i,"qc.overallStatus"])
       if(unique(DF$StudyID) == "Microbiologia_HUGTiP"){
         idHeader<-"hCoV-19/Spain/CT-HUGTiP"
@@ -130,6 +133,10 @@ gisaidProcess<-function(ResultsFile)
   }
   outputDF<-outputDF[! rowSums(is.na(outputDF))==ncol(outputDF),]
   write.csv(outputDF,file=GisaidSubmitCsv,row.names = F,fileEncoding = "UTF-8")
+  #Upload to s3
+  myFileName<-basename(GisaidSubmitCsv)
+  put_object(GisaidSubmitCsv,paste("Runs/",projectString,myFileName,sep=""),bucket,multipart=T)
+  put_object(GisaidSubmitFasta,paste("Runs/",projectString,GisaidFastaFilename,sep=""),bucket,multipart=T)
   DF$passage_details
 }
 
@@ -141,12 +148,12 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
-# projectString<-"2021-04-06_Covid-R010_241961723"
+projectString<-"2021-05-03_Covid-R014_254765511/"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
-# MetadataFile="~/Downloads/Config_RunLleons.xlsx"
-# MetadataFile="~/Downloads/metadata_to_fetch_run_R010.csv"
+# MetadataFile="~/Downloads/Config_Run05032021.xlsx"
+MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
 bucket <- "s3://***REMOVED***"
 
 ### Read Viralrecon output from S3.
@@ -285,5 +292,5 @@ for(study in levels(MetadataNFNCDF$StudyID)){
 write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 #### Produce files for GISAID batch upload
 
-put_object(myUpdateAggregated,paste("Runs/UpdatedData/Updated_",Sys.Date(),"_updated.csv",sep=""),bucket,multipart=T)
+# put_object(myUpdateAggregated,paste("Runs/UpdatedData/Updated_",Sys.Date(),"_updated.csv",sep=""),bucket,multipart=T)
 

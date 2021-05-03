@@ -41,7 +41,7 @@ nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --inp
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
   --outdir ${NFOutDir}results --with-tower  --tracedir /tmp/tracedir \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar 
+  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar
 
 
 # variantDir=/mnt/sdo1/VariantProcessing/R003MP1A1_S1_L001/subset_clean_500000

@@ -7,7 +7,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ### Look at https://github.com/Teichlab/basespace_fq_downloader
 ### Check also https://github.com/nh13/basespace-invaders
 s3Bucket="s3://***REMOVED***/"
-
+aggregatedDir="${s3Bucket}Runs/AggregatedData/"
 ### BS-CLI download for a project using
 ### By combining these download can be done automatically 
 ### Need to first how authentication token is managed by
@@ -120,7 +120,7 @@ done
 aws s3 cp  /tmp/${name}_samples.csv ${s3Location}RawData/
 aws s3 cp /tmp/${name}_project.csv ${s3Location}RawData/
 aws s3 cp /tmp/${name}_NFSamples.csv ${s3Location}RawData/
-
+aws s3 cp $samplesFile ${s3Location}
 echo "Cleaning up"
 rm -rf /tmp/$projectString /tmp/${newProjectName}_samples.csv  /tmp/${newProjectName}_project.csv 
 
@@ -137,10 +137,10 @@ echo $s3Location
 # ### Parse NextFlow Resucdlts
 . $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
 
-/usr/local/bin/Rscript $MYDIR/NFProcessResults.R $projectString $samplesFile
+/usr/local/bin/Rscript $MYDIR/NFProcessResults.R ${projectString}/ $samplesFile
+
 
 ### Insert results into DB, using ViralRecon, NextClade i Pangolin.
-
-/usr/local/bin/Rscript $MYDIR/nf_process_results.R -S $projectString -s true
+/usr/local/bin/Rscript $MYDIR/nf_process_results.R -S ${projectString}/ -s true
 
 #gisaid_uploader -a ./gisaid_uploader.authtoken CoV upload --fasta ~/Downloads/Covid-R008_Althaia_gisaid.fasta --csv ~/Downloads/Covid-R008_Althaia_gisaid.csv > ~/Downloads/Covid-R008_Althaia_gisaidUpload.txt
