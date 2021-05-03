@@ -10,7 +10,7 @@ fileUrl=$1
 #### Check whether blastdb needs to be downloaded or created or both
 
 #### Where the bucket is
-CovidBucket="s3://***REMOVED***/"
+CovidBucket="s3://covidseq-14012021-eu-west-1/"
 ### Files from GISAID follow a dated nomenclature. We will use it to obtain the last file
 ### Which is the last version and date of the GISAID Fasta DB.
 GisaidFastaFile=`aws s3 ls ${CovidBucket}GISAID/DataFiles/ |awk '{print $4}' | grep fasta.gz | sort | tail -n 1`
@@ -24,7 +24,7 @@ GisaidBlastTmpFile="/tmp/"`basename ${GisaidFastaFile%%.gz}`
 echo "GisaidBlastTmpFile $GisaidBlastTmpFile"
 GisaidBlasts3File="/tmp/GisaidBlasts3Files.txt"
 
-aws s3 ls s3://***REMOVED***/GISAID/BlastDB/ | awk '{print $4}' | grep $dateString > $GisaidBlasts3File
+aws s3 ls s3://covidseq-14012021-eu-west-1/GISAID/BlastDB/ | awk '{print $4}' | grep $dateString > $GisaidBlasts3File
 
 ### Does the blast index corresponding to this file exist in /tmp?
 if [ -e ${GisaidBlastTmpFile}.nal ]
@@ -83,10 +83,10 @@ blastn -db ${GisaidFastaTmpFile%%.gz} -max_hsps 1 -num_threads 4 -max_target_seq
 cat ${filename%%.fasta}_blastOut10.txt | awk '{print $2}' > ${filename%%.fasta}_blastSeqs10.txt
 seqkit grep -f ${filename%%.fasta}_blastSeqs10.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs10_$dateString.fasta
 rm ${filename%%.fasta}_blastOut10.txt  ${filename%%.fasta}_blastSeqs10.txt
-aws s3 cp ${filename%%.fasta}_blastSeqs10_$dateString.fasta s3://***REMOVED***/GISAID/BlastContexts/
+aws s3 cp ${filename%%.fasta}_blastSeqs10_$dateString.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/
 
 blastn -db ${GisaidFastaTmpFile%%.gz} -max_hsps 1 -num_threads 4 -max_target_seqs 50 -out ${filename%%.fasta}_blastOut50.txt -outfmt 6 -query ${filename}
 cat ${filename%%.fasta}_blastOut50.txt | awk '{print $2}' > ${filename%%.fasta}_blastSeqs50.txt
 seqkit grep -f ${filename%%.fasta}_blastSeqs50.txt $GisaidFastaTmpFile > ${filename%%.fasta}_blastSeqs50_$dateString.fasta
 rm ${filename%%.fasta}_blastOut50.txt  ${filename%%.fasta}_blastSeqs50.txt
-aws s3 cp ${filename%%.fasta}_blastSeqs50_$dateString.fasta s3://***REMOVED***/GISAID/BlastContexts/
+aws s3 cp ${filename%%.fasta}_blastSeqs50_$dateString.fasta s3://covidseq-14012021-eu-west-1/GISAID/BlastContexts/

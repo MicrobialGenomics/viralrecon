@@ -28,7 +28,7 @@ gisaidProcess<-function(ResultsFile)
   GisaidFastaFilename=basename(GisaidSubmitFasta)
   GisaidSubmitCsv=paste(GisaidSubmitRoot,"_gisaid.csv",sep="")
 
-  bucket <- "s3://***REMOVED***"
+  bucket <- Sys.getenv("s3Bucket")
 
   outputDF <- data.frame(matrix(ncol = 29, nrow = 0))
   y<-c("submitter","fn","covv_virus_name","covv_type","covv_passage","covv_collection_date",
@@ -154,7 +154,7 @@ projectID<-projectID[[1]][2]
 MetadataFile=args[2]
 # MetadataFile="~/Downloads/Config_Run05032021.xlsx"
 MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
-bucket <- "s3://***REMOVED***"
+ bucket <- Sys.getenv("s3Bucket")
 
 ### Read Viralrecon output from S3.
 s3NFOutput <- bucket %>%

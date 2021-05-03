@@ -6,7 +6,12 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ### Other SDK for basespace that may prove useful for the same purpose.
 ### Look at https://github.com/Teichlab/basespace_fq_downloader
 ### Check also https://github.com/nh13/basespace-invaders
-s3Bucket="s3://***REMOVED***/"
+
+### s3Bucket should be defined in bin/environment.sh
+# s3Bucket="s3://bucketName/"
+. ${MYDIR}/environment.sh
+echo "Using bucket $s3Bucket"
+
 aggregatedDir="${s3Bucket}Runs/AggregatedData/"
 ### BS-CLI download for a project using
 ### By combining these download can be done automatically 

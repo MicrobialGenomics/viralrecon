@@ -15,7 +15,12 @@
 
 ### - file with s3 routes
 ###    --
-s3Bucket="s3://***REMOVED***/"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+### s3Bucket should be defined in bin/environment.sh
+# s3Bucket="s3://bucketName/"
+. ${MYDIR}/environment.sh
+echo "Using bucket $s3Bucket"
+
 
 NFSamplesFile=$1
 NFOutDir=$2
@@ -31,7 +36,7 @@ export NXF_VER=20.10.0
 
 ### Try with modified version of viralrecon/Full Dataset
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
-### All config files for analysis are on s3://***REMOVED***/NextFlow/Configs/
+### All config files for analysis are on s3://covidseq-14012021-eu-west-1/NextFlow/Configs/
 ### For some reason outputting of trace on s3 support is broken. Local tracedir is chosen and then uploaded.
 nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile \
  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
