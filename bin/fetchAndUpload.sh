@@ -45,7 +45,7 @@ idCrossFile=$3 || echo "No ID CorssFile passed as argument, filenames will need 
 echo "idCrossFile is: $idCrossFile"
 run_id=`echo $name | sed s/Covid-//`
 echo "Querying database with $run_id"
-/usr/local/bin/Rscript $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
+Rscript $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
 samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
 
 ### Behaviour: If Id cross File is not provided $name variable will be used throughout and needs to correspond to the basespace project
@@ -133,15 +133,15 @@ rm -rf /tmp/$projectString /tmp/${newProjectName}_samples.csv  /tmp/${newProject
 
 ### Can we run nextflow pipeline from here?
 /tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
-aws s3 cp /tmp/${newProjectName}_samples.csv ${s3Location}
+aws s3 cp /tmp/${newProjectName}_Samples.csv ${s3Location}
 echo $s3Location
 
 
 # ### Running Nextflow
-. $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
+. $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 # ### Parse NextFlow Resucdlts
-. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFsamples.csv $s3Location
+. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 /usr/local/bin/Rscript $MYDIR/NFProcessResults.R ${projectString}/ $samplesFile
 
