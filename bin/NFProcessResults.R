@@ -158,6 +158,8 @@ MetadataFile=args[2]
 # MetadataFile="~/Downloads/Config_Run05032021.xlsx"
 # MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
 bucket <- Sys.getenv("s3Bucket")
+ResultDir <- Sys.getenv("ResultDir")
+
 print(bucket)
 ### Read Viralrecon output from S3.
 s3NFOutput <- bucket %>%
@@ -264,35 +266,38 @@ levels(MetadataNFNCDF$StudyID)
 for(study in levels(MetadataNFNCDF$StudyID)){
   mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
   #Use ; for FS because mutation list have ","
-  write.table(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
+  write.table(mySubDF,file=paste(ResultDir,projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
   #Upload to s3
-  myFileObject<-paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep="")
-  put_object(myFileObject,paste("Runs/",projectString,projectID,"_",study,".csv",sep=""),bucket,multipart=T)
+  myFileObject<-paste(ResultDir,projectID,"_",study,".csv",sep="")
+  put_object(myFileObject,paste(ResultDir,projectString,projectID,"_",study,".csv",sep=""),bucket,multipart=T)
   ## Generate GISAID files
-  gisaidProcess(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".csv",sep=""))
+  gisaidProcess(paste(ResultDir,projectID,"_",study,".csv",sep=""))
 
   #Generate XLS files
-  xlsx::write.xlsx(mySubDF,file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".xlsx",sep=""),row.names = F)
+  xlsx::write.xlsx(mySubDF,file=paste(ResultDir,projectID,"_",study,".xlsx",sep=""),row.names = F)
   #Upload to s3
-  myFileObject<-paste("/Users/mnoguera/Downloads/",projectID,"_",study,".xlsx",sep="")
+  myFileObject<-paste(ResultDir,projectID,"_",study,".xlsx",sep="")
   put_object(myFileObject,paste("Runs/",projectString,projectID,"_",study,".xlsx",sep=""),bucket,multipart=T)
 }
 
 
 ### Keep track of study specific fasta files. These may be handy for internal result reporting.
 for(study in levels(MetadataNFNCDF$StudyID)){
-  system(paste("rm",paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep="")))
+  system(paste("rm",paste(ResultDir,projectID,"_",study,".fasta",sep="")))
   mySubDF<-subset.data.frame(MetadataNFNCDF,StudyID==study)
   # fileConn<-file(paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep=""),)
   for (i in 1:nrow(mySubDF)){
     print(i)
     # writeLines(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"],"\n"),fileConn)
-    write(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"]),file=paste("/Users/mnoguera/Downloads/",projectID,"_",study,".fasta",sep=""),append=T)
+    write(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"]),file=paste(ResultDir,projectID,"_",study,".fasta",sep=""),append=T)
   }
   # close(fileConn)
 }
 
-write.table(MetadataNFNCDF,file=paste("/Users/mnoguera/Downloads/",projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
+write.table(MetadataNFNCDF,file=paste(ResultDir,projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
+myFileObject<-paste(ResultDir,projectID,".csv",sep="")
+put_object(myFileObject,paste("Runs/",projectString,projectID,".csv",sep=""),bucket,multipart=T)
+
 #### Produce files for GISAID batch upload
 
 # put_object(myUpdateAggregated,paste("Runs/UpdatedData/Updated_",Sys.Date(),"_updated.csv",sep=""),bucket,multipart=T)
