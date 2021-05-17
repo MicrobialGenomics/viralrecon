@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo "MYDIR is $MYDIR"
 ### 2021-01-14 19:39:07 MNJ Will fetch fastq files from BaseSpace Project using Basespace reference and default credentials
 ### Will use BS CLI from https://developer.basespace.illumina.com/docs/content/documentation/cli/cli-overview
 

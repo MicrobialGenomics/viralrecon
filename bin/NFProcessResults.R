@@ -30,10 +30,10 @@ gisaidProcess<-function(ResultsFile)
 
   bucket <- Sys.getenv("s3Bucket")
 
-  outputDF <- data.frame(matrix(ncol = 29, nrow = 0))
+  outputDF <- data.frame(matrix(ncol = 30, nrow = 0))
   y<-c("submitter","fn","covv_virus_name","covv_type","covv_passage","covv_collection_date",
        "covv_location","covv_add_location","covv_host","covv_add_host_info","covv_gender",
-       "covv_patient_age","covv_patient_status","covv_specimen","covv_outbreak","covv_last_vaccinated",
+       "covv_patient_age","covv_patient_status","covv_specimen","covv_sampling_strategy","covv_outbreak","covv_last_vaccinated",
        "covv_treatment","covv_seq_technology","covv_assembly_method","covv_coverage","covv_orig_lab","covv_orig_lab_addr",
        "covv_provider_sample_id","covv_subm_lab","covv_subm_lab_addr","covv_subm_sample_id","covv_authors","covv_comment","comment_type")
 
@@ -41,7 +41,7 @@ gisaidProcess<-function(ResultsFile)
   x <- c("Submitter", "FASTA filename", "Virus name","Type",
          "Passage details/history","Collection date","Location",
          "Additional location information","Host","Additional host information",
-         "Gender","Patient age","Patient status","Specimen source",
+         "Gender","Patient age","Patient status","Specimen source","Sampling Strategy",
          "Outbreak","Last vaccinated","Treatment","Sequencing technology",
          "Assembly method","Coverage","Originating lab","Address",
          "Sample ID given by the sample provider","Submitting lab",
@@ -55,6 +55,8 @@ gisaidProcess<-function(ResultsFile)
   gisaidType<-"betacoronavirus"
   gisaidSequencingTechnology<-"Illumina/MiSeq"
   gisaidAssemblyMethod<-"Viralrecon/iVar"
+
+  ### The following avoids adding any author as a local author for sequences from Microbiologia_HUGTiP. In these samples authorship is agreed upon and pre-defined.
   if( unique(DF$StudyID) == "Microbiologia_HUGTiP" | unique(DF$StudyID)=="Micro_HUGTiP"){
     gisaidLocalAuthors<-""
     gisaidSubmittingLab<-"Can Ruti SARS-CoV-2 Sequencing Hub (HUGTiP/IrsiCaixa/IGTP)"
@@ -114,6 +116,7 @@ gisaidProcess<-function(ResultsFile)
       outputDF[i,"covv_patient_age"]<-DF[i,"age"]
       outputDF[i,"covv_patient_status"]<-ifelse(is.na(DF[i,"patient_status"]),"Unknown",DF[i,"patient_status"]) ### Use Unknown
       outputDF[i,"covv_specimen"]<-DF[i,"source"]
+      outputDF[i,"covv_sampling_strategy"]<-ifelse(is.na(DF[i,"sequencing_strategy"]),"Unknown",DF[i,"sequencing_strategy"])
       outputDF[i,"covv_outbreak"]<-DF[i,"outbreak"]
       outputDF[i,"covv_last_vaccinated"]<-ifelse(is.na(DF[i,"vaccinated"]),"",DF[i,"vaccinated"])
       outputDF[i,"covv_treatment"]<-ifelse(is.na(DF[i,"treatment"]),"",DF[i,"treatment"])
@@ -148,14 +151,14 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
-projectString<-"2021-05-03_Covid-R014_254765511/"
+# projectString<-"2021-05-03_Covid-R014_254765511/"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
 # MetadataFile="~/Downloads/Config_Run05032021.xlsx"
-MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
- bucket <- Sys.getenv("s3Bucket")
-
+# MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
+bucket <- Sys.getenv("s3Bucket")
+print(bucket)
 ### Read Viralrecon output from S3.
 s3NFOutput <- bucket %>%
   aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%

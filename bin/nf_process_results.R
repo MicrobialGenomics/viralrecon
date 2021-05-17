@@ -120,7 +120,7 @@ if (!opt$ingest_sql %in% c("true", "false")) {
 }
 
 if(!is.null(opt$s3Dir)) {
-    bucket <- "s3://covidseq-14012021-eu-west-1"
+    bucket <- Sys.getenv("s3Bucket")
     ### Going to guess File locations from s3 path
     projectString <- opt$s3Dir
     s3NFOutput <- bucket %>%
