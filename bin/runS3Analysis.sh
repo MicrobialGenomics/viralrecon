@@ -38,7 +38,7 @@ export NXF_VER=20.10.0
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
 ### All config files for analysis are on s3://covidseq-14012021-eu-west-1/NextFlow/Configs/
 ### For some reason outputting of trace on s3 support is broken. Local tracedir is chosen and then uploaded.
-nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile \
+nextflow run ${MYDIR}/main.nf --input $NFSamplesFile \
  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
   -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
