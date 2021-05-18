@@ -258,7 +258,7 @@ Encoding(MetadataNFNCDF$OriginatingLab[2])
 colnames(MetadataNFNCDF)[1]<-"library_id"
 MetadataDF$OriginatingLab
 MetadataNFNCDF$RunProjectID
-
+print(paste("ResultDir is:",ResultDir))
 #### Producte reports for internal use
 #### This will be project-specific and contain comprehensive pipeline information for further processing/or not
 MetadataNFNCDF$StudyID<-as.factor(MetadataNFNCDF$StudyID)
@@ -294,6 +294,7 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   # close(fileConn)
 }
 
+print(paste("ResultDir is:",ResultDir))
 write.table(MetadataNFNCDF,file=paste(ResultDir,projectID,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
 myFileObject<-paste(ResultDir,projectID,".csv",sep="")
 put_object(myFileObject,paste("Runs/",projectString,projectID,".csv",sep=""),bucket,multipart=T)
