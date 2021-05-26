@@ -269,7 +269,7 @@ for(study in levels(MetadataNFNCDF$StudyID)){
   write.table(mySubDF,file=paste(ResultDir,projectID,"_",study,".csv",sep=""),row.names = F,fileEncoding = "UTF-8" ,sep=";")
   #Upload to s3
   myFileObject<-paste(ResultDir,projectID,"_",study,".csv",sep="")
-  put_object(myFileObject,paste(ResultDir,projectString,projectID,"_",study,".csv",sep=""),bucket,multipart=T)
+  put_object(myFileObject,paste("Runs/",ResultDir,projectString,projectID,"_",study,".csv",sep=""),bucket,multipart=T)
   ## Generate GISAID files
   gisaidProcess(paste(ResultDir,projectID,"_",study,".csv",sep=""))
 
@@ -290,6 +290,9 @@ for(study in levels(MetadataNFNCDF$StudyID)){
     print(i)
     # writeLines(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"],"\n"),fileConn)
     write(paste(">",mySubDF[i,"library_id"],"\n",mySubDF[i,"FastqSequence"]),file=paste(ResultDir,projectID,"_",study,".fasta",sep=""),append=T)
+	#Upload to s3
+  	myFileObject<-paste(ResultDir,projectID,"_",study,".fasta",sep="")
+  	put_object(myFileObject,paste("Runs/",projectString,projectID,"_",study,".fasta",sep=""),bucket,multipart=T)
   }
   # close(fileConn)
 }
