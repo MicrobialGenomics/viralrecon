@@ -45,7 +45,7 @@ idCrossFile=$3 || echo "No ID CorssFile passed as argument, filenames will need 
 echo "idCrossFile is: $idCrossFile"
 run_id=`echo $name | sed s/Covid-//`
 echo "Querying database with $run_id"
-Rscript $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
+$RscriptBin $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
 samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
 
 ### Behaviour: If Id cross File is not provided $name variable will be used throughout and needs to correspond to the basespace project
