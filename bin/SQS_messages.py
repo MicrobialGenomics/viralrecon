@@ -27,6 +27,7 @@ response = sqs.receive_message(
     VisibilityTimeout=0,
     WaitTimeSeconds=0
 )
+print(response)
 
 message = response['Messages'][0]
 receipt_handle = message['ReceiptHandle']
