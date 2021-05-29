@@ -45,7 +45,7 @@ nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' \
-  --outdir ${NFOutDir}results --with-tower  --tracedir /tmp/tracedir \
+  --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar 
 
 
