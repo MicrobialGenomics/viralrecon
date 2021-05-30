@@ -41,14 +41,17 @@ export NXF_VER=20.10.0
 nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile \
  --fasta $ReferenceDir/NC_045512.2.fasta \
  --gff $ReferenceDir/NC_045512.2.gff3 \
-  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
+  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email marc.noguera.julian@gmail.com \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
-  -w 's3://microbialgenomics-scratch/' \
+  -w 's3://microbialgenomics-scratch/' -name ${NFSamplesFile%%_NFSamples.csv} \
   --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar 
+  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
+  -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html
 
-
+aws s3 cp /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
+aws s3 cp /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 # variantDir=/mnt/sdo1/VariantProcessing/R003MP1A1_S1_L001/subset_clean_500000
 
 # nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input /tmp/Covid-R005_NFSamples_Local.csv \
@@ -66,12 +69,13 @@ nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile \
 #   -w /tmp/workdir --outdir /tmp/results\
 #   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 
-#   nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
-#  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
-#  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
+#   nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile  \
+#  --fasta $ReferenceDir/NC_045512.2.fasta \
+#  --gff $ReferenceDir/NC_045512.2.gff3 \
 #   -profile docker --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es --callers ivar --align_unpaired\
 #   -w /tmp/workdir --outdir /tmp/results\
-#   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
+#   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 -with-tower -with-docker microbialgenomics/viralrecon:latest
+
 # ### To run Nextclade to call mutations on sequences
 # docker run -it --rm -u 1000 --volume="/Users/mnoguera/Downloads/:/seq" \
 # neherlab/nextclade nextclade --input-fasta '/seq/gisaid_hcov-19_2021_01_25_16.fasta' \

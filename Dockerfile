@@ -7,6 +7,8 @@ COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
 
 #  For Bandage: otherwise it complains about missing libGL.so.1
+RUN apt-get update -y
+RUN apt-get install -y sendmail libtbb-dev
 RUN apt-get install -y libgl1-mesa-glx && apt-get clean -y
 
 # Add conda installation dir to PATH (instead of doing 'conda activate')

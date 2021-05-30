@@ -3501,7 +3501,7 @@ process get_software_versions {
  * STEP 7: MultiQC
  */
 process MULTIQC {
-    label 'process_medium'
+    label 'process_high'
     publishDir "${params.outdir}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.endsWith("assembly_metrics_mqc.tsv")) "assembly/$filename"
