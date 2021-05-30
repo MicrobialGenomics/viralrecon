@@ -126,9 +126,7 @@ def send_ses_email(mailAddress,projectName,state):
 send_ses_email("mnoguera@irsicaixa.es","Test","Started")
 bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
 print(bashCommand)
-import subprocess
-bashCommand = myDir+"/fetchAndUpload.sh "+myArg
-print(bashCommand)
+
 import subprocess
 #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 process = subprocess.Popen(bashCommand.split())
