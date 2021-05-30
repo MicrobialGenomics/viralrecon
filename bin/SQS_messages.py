@@ -37,6 +37,7 @@ response = sqs.receive_message(
     WaitTimeSeconds=0
 )
 print(response)
+>>>>>>> 7433857f4edeb14e5a44f2ae1923a8aaa58c0f05
 message = response['Messages'][0]
 receipt_handle = message['ReceiptHandle']
 myArg=(message['Body'])
