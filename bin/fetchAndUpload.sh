@@ -61,6 +61,17 @@ echo "passed the rubicon with $newProjectName"
 ### Lists all projects to csv file, filtering by name
 ### redirect output to a filecan be useful to get project id
 bs list projects --filter-term=$name -f csv > /tmp/${newProjectName}_project.csv
+
+#### Is Data available?
+numProjects=`wc -l /tmp/${newProjectName}_project.csv  | awk '{print $1}'`
+echo "AVailable projects matchin $newProjectName is $numProjects"
+cat /tmp/${newProjectName}_project.csv
+mapfile -n 2 < /tmp/${newProjectName}_project.csv 
+if ((${#MAPFILE[@]}<2)); then
+	echo "Exiting"
+ exit 1 ### Need to exit in order for calling python script not continuign
+fi
+
 ### Obtain the project BaseSpace ID
 projectID=`cat /tmp/${newProjectName}_project.csv | grep "${name}," | awk 'BEGIN{FS=","}{print $2}'`
 ### Create a unique string for this run
@@ -132,7 +143,7 @@ rm -rf /tmp/$projectString /tmp/${newProjectName}_samples.csv  /tmp/${newProject
 
 
 ### Can we run nextflow pipeline from here?
-/tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
+echo /tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
 aws s3 cp /tmp/${newProjectName}_Samples.csv ${s3Location}
 echo $s3Location
 

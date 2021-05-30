@@ -12,7 +12,10 @@ import boto3
 from botocore.exceptions import ClientError
 import sys,os
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]) )
+from tendo import singleton ### To ensure single execution
 
+#### Will exit if another instance running
+me = singleton.SingleInstance()
 sqs = boto3.client('sqs')
 queue_url = 'https://sqs.eu-west-1.amazonaws.com/444390077361/CovidSeq'
 # Receive message from SQS queue
@@ -32,8 +35,10 @@ print(response)
 message = response['Messages'][0]
 receipt_handle = message['ReceiptHandle']
 myArg=(message['Body'])
-#print('Received message: %s' % message)
 print(myArg)
+print(f"Number of messages received: {len(response.get('Messages', []))}")
+#print('Received message: %s' % message)
+
 
 ### Taken from EntheraSeq Repo
 def send_ses_email(mailAddress,projectName,state):
@@ -122,6 +127,10 @@ send_ses_email("mnoguera@irsicaixa.es","Test","Started")
 bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
 print(bashCommand)
 import subprocess
+bashCommand = myDir+"/fetchAndUpload.sh "+myArg
+print(bashCommand)
+import subprocess
+#process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 process = subprocess.Popen(bashCommand.split())
 output, error = process.communicate()
 
