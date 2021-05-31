@@ -26,7 +26,9 @@ NFSamplesFile=$1
 NFOutDir=$2
 
 RunName=`basename $NFSamplesFile`
-
+RunName=${RunName%%_NFSamples.csv}
+randString=` openssl  rand -hex 2`
+RunName=${RunName}_$randString
 #### Need to source a file with credentials an
 #### AWS credentials are IAM managed
 #### NextFlow credentials 
@@ -48,7 +50,7 @@ nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
   -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email marc.noguera.julian@gmail.com \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
-  -w 's3://microbialgenomics-scratch/' -name ${RunName%%_NFSamples.csv} \
+  -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
   --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar  \
  -with-report ${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
