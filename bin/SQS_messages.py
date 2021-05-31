@@ -11,34 +11,12 @@
 import boto3
 from botocore.exceptions import ClientError
 import sys,os
+import subprocess
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]) )
 from tendo import singleton ### To ensure single execution
 
 #### Will exit if another instance running
 me = singleton.SingleInstance()
-sqs = boto3.client('sqs')
-queue_url = 'https://sqs.eu-west-1.amazonaws.com/444390077361/CovidSeq'
-# Receive message from SQS queue
-response = sqs.receive_message(
-    QueueUrl=queue_url,
-    AttributeNames=[
-        'SentTimestamp'
-    ],
-    MaxNumberOfMessages=1,
-    MessageAttributeNames=[
-        'All'
-    ],
-    VisibilityTimeout=0,
-    WaitTimeSeconds=0
-)
-print(response)
-message = response['Messages'][0]
-receipt_handle = message['ReceiptHandle']
-myArg=(message['Body'])
-print(myArg)
-print(f"Number of messages received: {len(response.get('Messages', []))}")
-#print('Received message: %s' % message)
-
 
 ### Taken from EntheraSeq Repo
 def send_ses_email(mailAddress,projectName,state):
@@ -121,22 +99,41 @@ def send_ses_email(mailAddress,projectName,state):
         print("Email sent! Message ID:"),
         print(response['MessageId'])
 
-
-
-#send_ses_email("mnoguera@irsicaixa.es","Test","Started")
-bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
-print(bashCommand)
-
-import subprocess
-#process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-process = subprocess.Popen(bashCommand.split())
-output, error = process.communicate()
-
-# Delete received message from queue
-sqs.delete_message(
+sqs = boto3.client('sqs')
+queue_url = 'https://sqs.eu-west-1.amazonaws.com/444390077361/CovidSeq'
+# Receive message from SQS queue
+response = sqs.receive_message(
     QueueUrl=queue_url,
-    ReceiptHandle=receipt_handle
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=10,
+    MessageAttributeNames=[
+        'All'
+    ],
+    VisibilityTimeout=0,
+    WaitTimeSeconds=0
 )
+print(response)
+print(f"Number of messages received: {len(response.get('Messages', []))}")
 
-send_ses_email("mnoguera@irsicaixa.es","Test","Finished")
+for i in range(len(response['Messages'])):
+    message = response['Messages'][i]
+    receipt_handle = message['ReceiptHandle']
+    myArg=(message['Body'])
+    print(myArg)
+    #send_ses_email("mnoguera@irsicaixa.es","Test","Started")
+    bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
+    print(bashCommand)
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    #process = subprocess.Popen(bashCommand.split())
+    output, error = process.communicate()
+    print(output)
+    print(error)
+# Delete received message from queue
+    sqs.delete_message(
+         QueueUrl=queue_url,
+         ReceiptHandle=receipt_handle
+    )
+    send_ses_email("mnoguera@irsicaixa.es","Test","Finished")
 
