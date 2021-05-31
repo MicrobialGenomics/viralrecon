@@ -162,8 +162,10 @@ ResultDir <- Sys.getenv("ResultDir")
 
 print(bucket)
 ### Read Viralrecon output from S3.
+print("Reading NextFlow/Viralrecon output")
+print(paste("Runs/",projectString,sep=""))
 s3NFOutput <- bucket %>%
-  aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
+  aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep=""),max=Inf) %>%
   filter(str_detect(Key, projectString)) %>%
   filter(str_detect(Key, "NFResults.csv" ))
 NFSamplesDF<-s3NFOutput %>%
@@ -175,6 +177,7 @@ NFSamplesDF<-s3NFOutput %>%
 
 print(nrow(NFSamplesDF))
 
+print("Reading Pangolin Output from s3")
 #### Read Pangoling from S3
 s3PGOutput <- bucket %>%
   aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%
@@ -189,6 +192,8 @@ PGOutputDF<-s3PGOutput%>%
   dplyr::rename(library_id = taxon)
 
 print(nrow(PGOutputDF))
+
+print("Reading Nextclade outputfrom s3")
 ### Read NextClade from S3.
 s3NCOutput <-  bucket %>%
   aws.s3::get_bucket_df(prefix = paste("Runs/",projectString,sep="")) %>%

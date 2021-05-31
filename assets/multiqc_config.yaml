@@ -290,7 +290,7 @@ sp:
     picard/markdups:
         fn: '*.MarkDuplicates.metrics.txt'
     picard/wgs_metrics:
-        fn: '*.coverage_metrics'
+        fn: true
     picard/basedistributionbycycle:
         skip: true
     picard/gcbias:

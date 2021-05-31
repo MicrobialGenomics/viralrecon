@@ -123,7 +123,7 @@ def send_ses_email(mailAddress,projectName,state):
 
 
 
-send_ses_email("mnoguera@irsicaixa.es","Test","Started")
+#send_ses_email("mnoguera@irsicaixa.es","Test","Started")
 bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
 print(bashCommand)
 

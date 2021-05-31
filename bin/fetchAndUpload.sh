@@ -158,6 +158,6 @@ $RscriptBin $MYDIR/NFProcessResults.R ${projectString}/ $samplesFile
 
 
 ### Insert results into DB, using ViralRecon, NextClade i Pangolin.
-#$RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
+$RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
 
 #gisaid_uploader -a ./gisaid_uploader.authtoken CoV upload --fasta ~/Downloads/Covid-R008_Althaia_gisaid.fasta --csv ~/Downloads/Covid-R008_Althaia_gisaid.csv > ~/Downloads/Covid-R008_Althaia_gisaidUpload.txt

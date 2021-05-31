@@ -25,6 +25,8 @@ echo "Using bucket $s3Bucket"
 NFSamplesFile=$1
 NFOutDir=$2
 
+RunName=`basename $NFSamplesFile`
+
 #### Need to source a file with credentials an
 #### AWS credentials are IAM managed
 #### NextFlow credentials 
@@ -34,24 +36,26 @@ git clone https://github.com/MicrobialGenomics/viralrecon.git
 export TOWER_ACCESS_TOKEN=4b252dc4118da98eaaacebd6e07aa6670f000934
 export NXF_VER=20.10.0 
 
+echo "Running pipeline from $COVIDSEQPIPELINEDIR"
+echo "With name $RunName"
 ### Try with modified version of viralrecon/Full Dataset
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
 ### All config files for analysis are on s3://covidseq-14012021-eu-west-1/NextFlow/Configs/
 ### For some reason outputting of trace on s3 support is broken. Local tracedir is chosen and then uploaded.
-nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile \
+nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
  --fasta $ReferenceDir/NC_045512.2.fasta \
  --gff $ReferenceDir/NC_045512.2.gff3 \
   -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email marc.noguera.julian@gmail.com \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
-  -w 's3://microbialgenomics-scratch/' -name ${NFSamplesFile%%_NFSamples.csv} \
+  -w 's3://microbialgenomics-scratch/' -name ${RunName%%_NFSamples.csv} \
   --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
-  -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
-  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html
+  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar  \
+ -with-report ${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+  -with-timeline ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html
 
-aws s3 cp /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
-aws s3 cp /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
+aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
+aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 # variantDir=/mnt/sdo1/VariantProcessing/R003MP1A1_S1_L001/subset_clean_500000
 
 # nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input /tmp/Covid-R005_NFSamples_Local.csv \
