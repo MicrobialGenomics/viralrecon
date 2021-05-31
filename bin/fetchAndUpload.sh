@@ -152,7 +152,7 @@ echo $s3Location
 . $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 # ### Parse NextFlow Resucdlts
-. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
+#. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 #$RscriptBin $MYDIR/NFProcessResults.R ${projectString}/ $samplesFile
 

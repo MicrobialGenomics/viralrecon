@@ -151,14 +151,15 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
-# projectString<-"2021-05-03_Covid-R014_254765511/"
+# projectString<-"2021-05-31_Covid-R018_266202938/"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
-# MetadataFile="~/Downloads/Config_Run05032021.xlsx"
+# MetadataFile="~/Downloads/metadata_to_fetch_run_R018.csv"
 # MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
 bucket <- Sys.getenv("s3Bucket")
 ResultDir <- Sys.getenv("ResultDir")
+# ResultDir <- "~/Downloads"
 
 print(bucket)
 ### Read Viralrecon output from S3.

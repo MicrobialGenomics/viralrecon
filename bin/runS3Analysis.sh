@@ -52,9 +52,9 @@ nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
   --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar  \
- -with-report ${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
-  -with-timeline ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html
+  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
+  -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
 
 aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
 aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
