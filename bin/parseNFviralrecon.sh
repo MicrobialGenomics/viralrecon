@@ -12,7 +12,7 @@ mkdir $NFDirPath
 
 ### Note that when running on cloud, results dir needs to be on s3
 ### Need to download it and select results to import into DB or csv?
-aws s3 cp  ${NFOutDir}results /tmp/${NFDirPath}/results --recursive --exclude "*" --include "*mkD.sorted.bam" --include "*.AF0.75.consensus.fa" --include "*.base_counts.tsv"
+aws s3 cp  ${NFOutDir}results /tmp/${NFDirPath}/results --recursive --exclude "*" --include "*mkD.sorted.bam*" --include "*.AF0.75.consensus.fa" --include "*.base_counts.tsv" --include "*.mkD.sorted.cov.tsv" --include "*fileInfo.txt"
 
 
 ### Variables to extractin, in csv Format.
@@ -53,33 +53,35 @@ rm /tmp/${NFDirPath}/NextCladeSequences.fasta
 echo "library_id,InstrumentID,FlowcellID,s3FastqR1,s3FastqR2,s3BamFile,s3CovFile,RawDataSeqs,CovidSeqs,FastqSequence,PercCov,DepthOfCov,s3FastaFile" > /tmp/${NFDirPath}/NFResults.csv
 for line in `cat $NFSamplesFile | tail -n +2`
 do
-   # echo $line
+   echo $line
    sampleName=`echo $line | awk 'BEGIN{FS=","}{print $1}'`
    instrumentID=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $1}'`
    flowcellID=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $3}'`
 
-  # echo "sampleName is $sampleName"
+  echo "sampleName is $sampleName"
     s3FastqR1=`echo $line | awk 'BEGIN{FS=","}{print $2}'`
     s3FastqR2=`echo $line | awk 'BEGIN{FS=","}{print $3}'`
-   # echo "s3 Files are $s3FastqR1 and $s3FastqR2"
+   echo "s3 Files are $s3FastqR1 and $s3FastqR2"
     s3BamFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.bam
-   # echo "s3 Bam File is $s3BamFile"
+   echo "s3 Bam File is $s3BamFile"
     s3FastaFile=${NFOutDir}results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa
     cat /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa  >> /tmp/${NFDirPath}/NextCladeSequences.fasta
   #  echo "s3 consensus File is $s3FastaFile"
-    samtools depth -q 20 -Q 10 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
-    aws s3 cp /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
-    s3CovFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
+   # samtools depth -q 20 -Q 10 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
+   # aws s3 cp /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
+    s3CovFile=${NFOutDir}results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv
    # echo "s3 Coverage file is $s3CovFile"
     RawDataSeqs=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
+  
    # echo "File has $RawDataSeqs raw sequences"
     CovidSeqs=`samtools view -F 4 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
    # echo "File has $CovidSeqs covid sequences"
     ConsensusSequence=`tail -n +2 /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | tr -d '\n'`
-    DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`
+    DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`
     PercN=`tail -n 1 /tmp/${NFDirPath}/results/variants/ivar/consensus/base_qc/${sampleName}.AF0.75.base_counts.tsv | awk '{print $3}'`
+    NumberN=`seqtk comp /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | awk '{x+=$9}END{print x}'`
     #echo "$PercN of genome is N"
-    PercCov=`echo "(100-$PercN)" | bc -l`
+    PercCov=`echo "100*(1-($NumberN/29930))" | bc -l`
    # echo "$PercCov of genome is covered"
     echo "${sampleName},${instrumentID},${flowcellID},${s3FastqR1},${s3FastqR2},${s3BamFile},${s3CovFile},${RawDataSeqs},${CovidSeqs},${ConsensusSequence},${PercCov},${DepthOfCoverage},${s3FastaFile}," >> /tmp/${NFDirPath}/NFResults.csv
 done

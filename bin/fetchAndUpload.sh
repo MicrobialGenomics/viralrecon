@@ -66,11 +66,11 @@ bs list projects --filter-term=$name -f csv > /tmp/${newProjectName}_project.csv
 numProjects=`wc -l /tmp/${newProjectName}_project.csv  | awk '{print $1}'`
 echo "AVailable projects matchin $newProjectName is $numProjects"
 cat /tmp/${newProjectName}_project.csv
-mapfile -n 2 < /tmp/${newProjectName}_project.csv 
-if ((${#MAPFILE[@]}<2)); then
-	echo "Exiting"
- exit 1 ### Need to exit in order for calling python script not continuign
-fi
+# mapfile -n 2 < /tmp/${newProjectName}_project.csv 
+# if ((${#MAPFILE[@]}<2)); then
+#  echo "Exiting"
+#  exit 1 ### Need to exit in order for calling python script not continuign
+# fi
 
 ### Obtain the project BaseSpace ID
 projectID=`cat /tmp/${newProjectName}_project.csv | grep "${name}," | awk 'BEGIN{FS=","}{print $2}'`
@@ -152,10 +152,9 @@ echo $s3Location
 . $MYDIR/runS3Analysis.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 # ### Parse NextFlow Resucdlts
-#. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
+. $MYDIR/parseNFviralrecon.sh /tmp/${newProjectName}_NFSamples.csv $s3Location
 
 $RscriptBin $MYDIR/NFProcessResults.R ${projectString}/ $samplesFile
-
 
 ### Insert results into DB, using ViralRecon, NextClade i Pangolin.
 $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true

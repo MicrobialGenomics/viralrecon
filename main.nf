@@ -1016,7 +1016,6 @@ process SORT_BAM {
                       if (filename.endsWith(".flagstat")) "samtools_stats/$filename"
                       else if (filename.endsWith(".idxstats")) "samtools_stats/$filename"
                       else if (filename.endsWith(".stats")) "samtools_stats/$filename"
-                      else if (filename.endsWith("depthOfCoverage.txt")) "samtools_stats/$filename"
                       else (params.protocol != 'amplicon' && params.skip_markduplicates) || params.save_align_intermeds ? filename : null
                 }
 
@@ -1030,6 +1029,7 @@ process SORT_BAM {
     tuple val(sample), val(single_end), path("*.sorted.{bam,bam.bai}"), path("*.flagstat") into ch_sort_bam
     path "*.{flagstat,idxstats,stats}" into ch_sort_bam_flagstat_mqc
 
+
     script:
     """
     samtools sort -@ $task.cpus -o ${sample}.sorted.bam -T $sample $bam
@@ -1038,7 +1038,6 @@ process SORT_BAM {
     samtools flagstat ${sample}.sorted.bam > ${sample}.sorted.bam.flagstat
     samtools idxstats ${sample}.sorted.bam > ${sample}.sorted.bam.idxstats
     samtools stats ${sample}.sorted.bam > ${sample}.sorted.bam.stats
-    samtools depth ${sample}.sorted.bam  | awk '{sum+=\$3} END { print "Average = ",sum/NR}' > ${sample}_depthOfCoverage.txt
     """
 }
 
@@ -1162,7 +1161,10 @@ if (params.skip_markduplicates) {
                           if (filename.endsWith(".flagstat")) "samtools_stats/$filename"
                           else if (filename.endsWith(".idxstats")) "samtools_stats/$filename"
                           else if (filename.endsWith(".stats")) "samtools_stats/$filename"
+                          else if (filename.endsWith("depthOfCoverage.txt")) "samtools_stats/$filename"
+                          else if (filename.endsWith("sorted.cov.tsv")) "samtools_stats/$filename"
                           else if (filename.endsWith(".metrics.txt")) "picard_metrics/$filename"
+                          else if (filename.endsWith("fileInfo.txt")) "samtools_stats/$filename"
                           else filename
                     }
 
@@ -1185,6 +1187,7 @@ if (params.skip_markduplicates) {
                                                                                 ch_markdup_bam_custom_consensus
         path "*.{flagstat,idxstats,stats}" into ch_markdup_bam_flagstat_mqc
         path "*.txt" into ch_markdup_bam_metrics_mqc
+        path "*{depthOfCoverage.txt,sorted.cov.tsv,fileInfo.txt}"
 
         script:
         def avail_mem = 3
@@ -1207,8 +1210,11 @@ if (params.skip_markduplicates) {
         samtools index ${prefix}.sorted.bam
         samtools idxstats ${prefix}.sorted.bam > ${prefix}.sorted.bam.idxstats
         samtools flagstat ${prefix}.sorted.bam > ${prefix}.sorted.bam.flagstat
+        samtools depth -a -q 20 -Q 10 ${prefix}.sorted.bam > ${prefix}.sorted.cov.tsv
         samtools stats ${prefix}.sorted.bam > ${prefix}.sorted.bam.stats
+        samtools depth -q 20 -Q 10 ${prefix}.sorted.bam | awk '{sum+=\$3} END { print "Average = ",sum/NR}' > ${prefix}_depthOfCoverage.txt
         """
+
     }
 }
 
