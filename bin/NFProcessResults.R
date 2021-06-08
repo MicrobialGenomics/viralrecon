@@ -151,11 +151,11 @@ if(is.na(args[1])){
 }
 
 projectString<-args[1]
-# projectString<-"2021-05-31_Covid-R018_266202938/"
+# projectString<-"2021-06-08_Covid-M018_270614344/"
 projectID<-strsplit(projectString,"_")
 projectID<-projectID[[1]][2]
 MetadataFile=args[2]
-# MetadataFile="~/Downloads/metadata_to_fetch_run_R018.csv"
+# MetadataFile="~/Downloads/metadata_to_fetch_run_M018.csv"
 # MetadataFile="/tmp/metadata_to_fetch_run_R014.csv"
 bucket <- Sys.getenv("s3Bucket")
 ResultDir <- Sys.getenv("ResultDir")
