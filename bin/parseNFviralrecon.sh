@@ -72,9 +72,10 @@ do
     s3CovFile=${NFOutDir}results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv
    # echo "s3 Coverage file is $s3CovFile"
     RawDataSeqs=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
-  
+     echo "RawDataSeqs is :$RawDataSeqs"	  
    # echo "File has $RawDataSeqs raw sequences"
     CovidSeqs=`samtools view -F 4 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | wc -l`
+    echo "CovidSeqs is: $CovidSeqs"
    # echo "File has $CovidSeqs covid sequences"
     ConsensusSequence=`tail -n +2 /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | tr -d '\n'`
     DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`

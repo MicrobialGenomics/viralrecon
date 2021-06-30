@@ -47,14 +47,14 @@ echo "With name $RunName"
 nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
  --fasta $ReferenceDir/NC_045512.2.fasta \
  --gff $ReferenceDir/NC_045512.2.gff3 \
-  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email marc.noguera.julian@gmail.com \
+  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
  --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
   -bucket-dir 's3://microbialgenomics-scratch/' \
   -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
-  --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
+  --outdir ${NFOutDir}results  --tracedir /tmp/tracedir \
   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
   -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
-  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
+  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc -resume
 
 aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
 aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
