@@ -9,12 +9,13 @@ echo "Using AWS/s3 Location: $s3Location"
 echo "Using Project String: $projectString"
 echo "Project Name is: $projectName"
 not_exist=false
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/$projectName.csv || not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NFResults.csv || not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/Pangolin_output.csv || not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NextCladeSequences_output.csv || not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.xlsx || not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.fasta || not_exist=true
+#### Check that all files exist, false if not.
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/$projectName.csv >/dev/null || not_exist=true
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NFResults.csv >/dev/null|| not_exist=true
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/Pangolin_output.csv >/dev/null|| not_exist=true
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NextCladeSequences_output.csv >/dev/null|| not_exist=true
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.xlsx >/dev/null|| not_exist=true
+aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.fasta >/dev/null || not_exist=true
 
 if $not_exist ; then 
     echo "Project did not run well, apparently"
@@ -23,4 +24,5 @@ else
     grep -v $projectName /tmp/covid_projects_pending.txt > /tmp/kk
     mv kk /tmp/covid_projects_pending.txt
     echo $projectName,success >> /tmp/covid_projects_success.txt
+    touch /tmp/${projectName}_completed.txt
 fi

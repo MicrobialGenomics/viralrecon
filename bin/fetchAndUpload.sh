@@ -144,7 +144,7 @@ else
 
 
     ### Can we run nextflow pipeline from here?     
-    cho /tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
+    echo /tmp/${newProjectName}_NFSamples.csv  ### This file could be fed into nextflow
     aws s3 cp /tmp/${newProjectName}_Samples.csv ${s3Location}
     echo $s3Location
     # ### Running Nextflow
@@ -163,9 +163,9 @@ else
     if [[ -e /tmp/${newProjectName}_completed.txt ]];then
         ### Ingest data to DB
         echo "Finishing"
-        #$RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
-       # aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}runs/AggregatedData/
-        ### Send Mail
+        $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
+        aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}runs/AggregatedData/
+        #### Consider running aggregated data analysis and gisaid upload.
     fi
 fi
 
