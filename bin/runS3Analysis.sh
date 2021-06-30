@@ -44,22 +44,39 @@ echo "With name $RunName"
 ### s3:///microbialgenomics-scratch is for temporary files, will keep files for 15 day time
 ### All config files for analysis are on s3://covidseq-14012021-eu-west-1/NextFlow/Configs/
 ### For some reason outputting of trace on s3 support is broken. Local tracedir is chosen and then uploaded.
-nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
- --fasta $ReferenceDir/NC_045512.2.fasta \
- --gff $ReferenceDir/NC_045512.2.gff3 \
-  -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email marc.noguera.julian@gmail.com \
- --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
-  -bucket-dir 's3://microbialgenomics-scratch/' \
-  -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
-  --outdir ${NFOutDir}results -with-tower  --tracedir /tmp/tracedir \
-  --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
-  -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
-  -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
+if [[ $RunProfile == "awsbatch" ]]
+then
+  echo "Running on AWS/Batch"
+  nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
+    --fasta $ReferenceDir/NC_045512.2.fasta \
+    --gff $ReferenceDir/NC_045512.2.gff3 \
+      -profile awsbatch --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
+    --awsqueue NextFlow_Queue_1 --awsregion eu-west-1 \
+    -bucket-dir 's3://microbialgenomics-scratch/' \
+    -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
+    --outdir ${NFOutDir}results --tracedir /tmp/tracedir \
+    --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
+    -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+    -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
+  aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
+  aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
+elif [[ $RunProfile == "docker" ]]
+then
+  echo "Running Locally on docker"
+  nextflow run ${COVIDSEQPIPELINEDIR}main.nf --input $NFSamplesFile \
+    --fasta $ReferenceDir/NC_045512.2.fasta \
+    --gff $ReferenceDir/NC_045512.2.gff3 \
+    -profile docker --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es \
+    -bucket-dir 's3://microbialgenomics-scratch/' \
+    -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
+    --outdir ${NFOutDir}results --tracedir /tmp/tracedir \
+    --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
+    -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+    -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
+fi
 
-aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
-aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 # variantDir=/mnt/sdo1/VariantProcessing/R003MP1A1_S1_L001/subset_clean_500000
-
+# --protocol amplicon --amplicon_bed $ReferenceDir/ArticPrimers_BediVar.bed 
 # nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input /tmp/Covid-R005_NFSamples_Local.csv \
 #   --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
 #   --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
@@ -68,6 +85,7 @@ aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 #   --outdir /tmp/results/ \
 #   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --callers ivar
 #   ### To run nextflow locally for testing
+
 # nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
 #  --fasta /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.fasta \
 #  --gff /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/Reference/NC_045512.2.gff3 \
@@ -75,12 +93,13 @@ aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 #   -w /tmp/workdir --outdir /tmp/results\
 #   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 
 
-#   nextflow run $COVIDSEQPIPELINEDIR/main.nf --input $NFSamplesFile  \
+#   nextflow run /Users/mnoguera/Documents/Work/Development/viralrecon/main.nf --input $NFSamplesFile  \
 #  --fasta $ReferenceDir/NC_045512.2.fasta \
 #  --gff $ReferenceDir/NC_045512.2.gff3 \
 #   -profile docker --skip_assembly --min_mapped_reads 1000 --email mnoguera@irsicaixa.es --callers ivar --align_unpaired\
-#   -w /tmp/workdir --outdir /tmp/results\
-#   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 -with-tower -with-docker microbialgenomics/viralrecon:latest
+#   -w /tmp/workdir --outdir /tmp/results --skip_multiqc \
+#   --protocol amplicon --amplicon_bed /Users/mnoguera/Documents/Work/Projects/Coronavirus_2020/SequenciacioNGS/ArticPrimers_BediVar.bed \
+#   --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 -with-docker microbialgenomics/viralrecon:latest
 
 # ### To run Nextclade to call mutations on sequences
 # docker run -it --rm -u 1000 --volume="/Users/mnoguera/Downloads/:/seq" \

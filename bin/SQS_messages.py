@@ -12,92 +12,13 @@ import boto3
 from botocore.exceptions import ClientError
 import sys,os
 import subprocess
+from pathlib import Path
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]) )
 from tendo import singleton ### To ensure single execution
 
 #### Will exit if another instance running
 me = singleton.SingleInstance()
 
-### Taken from EntheraSeq Repo
-def send_ses_email(mailAddress,projectName,state):
-    ses_client = boto3.client('ses')
-    # Replace sender@example.com with your "From" address.
-    # This address must be verified with Amazon SES.
-    SENDER = "CovidSeq Automated <mnoguera@irsicaixa.es>"
-
-    # Replace recipient@example.com with a "To" address. If your account 
-    # is still in the sandbox, this address must be verified.
-    RECIPIENT = mailAddress
-
-    # Specify a configuration set. If you do not want to use a configuration
-    # set, comment the following variable, and the 
-    # ConfigurationSetName=CONFIGURATION_SET argument below.
-    #CONFIGURATION_SET = "ConfigSet"
-
-    # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
-
-    # The subject line for the email.
-    SUBJECT = "CovidSeq Analysis event registered"
-
-    # The email body for recipients with non-HTML email clients.
-    BODY_TEXT = "CovidSeq Analysis has changed\n\n "
-                 
-                
-    # The HTML body of the email.
-    BODY_HTML = """<html>
-    <head></head>
-    <body>
-    <h3> CovidSeq Analysis has started </h3>
-    <p> We get in touch with you because the analysis project named {} has just changed state to {}.</p>
-    <br>
-    <p> Sincerely,</p>
-    <p> The Enthera Team</p>
-    </body>
-    </html>
-    """.format(projectName,state)            
-
-    # The character encoding for the email.
-    CHARSET = "UTF-8"
-
-    # Create a new SES resource and specify a region.
-    
-
-    # Try to send the email.
-    try:
-        #Provide the contents of the email.
-        response = ses_client.send_email(
-            Destination={
-                'ToAddresses': [
-                    RECIPIENT,
-                ],
-            },
-            Message={
-                'Body': {
-                    'Html': {
-                        'Charset': CHARSET,
-                        'Data': BODY_HTML,
-                    },
-                    'Text': {
-                        'Charset': CHARSET,
-                        'Data': BODY_TEXT,
-                    },
-                },
-                'Subject': {
-                    'Charset': CHARSET,
-                    'Data': SUBJECT,
-                },
-            },
-            Source=SENDER,
-            # If you are not using a configuration set, comment or delete the
-            # following line
-            #ConfigurationSetName=CONFIGURATION_SET,
-        )
-    # Display an error if something goes wrong.	
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-    else:
-        print("Email sent! Message ID:"),
-        print(response['MessageId'])
 
 sqs = boto3.client('sqs')
 queue_url = 'https://sqs.eu-west-1.amazonaws.com/444390077361/CovidSeq'
@@ -111,29 +32,40 @@ response = sqs.receive_message(
     MessageAttributeNames=[
         'All'
     ],
-    VisibilityTimeout=0,
+    VisibilityTimeout=10,
     WaitTimeSeconds=0
 )
-print(response)
+#print(response.get('Messages'))
 print(f"Number of messages received: {len(response.get('Messages', []))}")
+if len(response.get('Messages', [])) == 0:
+    print("No messages from SQS, exiting...")
+    exit()
 
-for i in range(len(response['Messages'])):
-    message = response['Messages'][i]
-    receipt_handle = message['ReceiptHandle']
-    myArg=(message['Body'])
-    print(myArg)
-    #send_ses_email("mnoguera@irsicaixa.es","Test","Started")
-    bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
-    print(bashCommand)
-    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    #process = subprocess.Popen(bashCommand.split())
-    output, error = process.communicate()
-    print(output)
-    print(error)
-# Delete received message from queue
-    sqs.delete_message(
-         QueueUrl=queue_url,
-         ReceiptHandle=receipt_handle
+message = response['Messages'][0]
+print(message)
+receipt_handle = message['ReceiptHandle']
+myArg=(message['Body'])
+print(myArg)
+# Creates a new file
+with open('/tmp/covid_projects_pending.txt', 'a') as fp:
+    fp.write(myArg+",pending\n")
+    
+sqs.delete_message(
+    QueueUrl=queue_url,
+    ReceiptHandle=receipt_handle
     )
-    send_ses_email("mnoguera@irsicaixa.es","Test","Finished")
+
+
+    # To write data to new file uncomment
+    # this fp.write("New file created")
+    # #send_ses_email("mnoguera@irsicaixa.es","Test","Started")
+    # bashCommand = 'bash '+pathname+'/fetchAndUpload.sh '+myArg
+    # print(bashCommand)
+    # #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    # process = subprocess.Popen(bashCommand.split())
+    # output, error = process.communicate()
+    # my_file = Path("/tmp/"+myArg+"_completed.txt")
+    #if my_file.is_file():
+    #    my_file.unlink()
+    # send_ses_email("mnoguera@irsicaixa.es","Test","Finished")
 
