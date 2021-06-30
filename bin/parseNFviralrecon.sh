@@ -81,8 +81,11 @@ do
     DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`
     PercN=`tail -n 1 /tmp/${NFDirPath}/results/variants/ivar/consensus/base_qc/${sampleName}.AF0.75.base_counts.tsv | awk '{print $3}'`
     NumberN=`seqtk comp /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | awk '{x+=$9}END{print x}'`
+    ls -la /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa
+    echo "Number of N is: $NumberN"
     #echo "$PercN of genome is N"
     PercCov=`echo "100*(1-($NumberN/29930))" | bc -l`
+    echo "Percentage covered is $PercCov"
    # echo "$PercCov of genome is covered"
     echo "${sampleName},${instrumentID},${flowcellID},${s3FastqR1},${s3FastqR2},${s3BamFile},${s3CovFile},${RawDataSeqs},${CovidSeqs},${ConsensusSequence},${PercCov},${DepthOfCoverage},${s3FastaFile}," >> /tmp/${NFDirPath}/NFResults.csv
 done
