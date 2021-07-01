@@ -164,7 +164,7 @@ else
         ### Ingest data to DB
         echo "Finishing"
         $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
-        aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}runs/AggregatedData/
+        aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}Runs/AggregatedData/
         #### Consider running aggregated data analysis and gisaid upload.
     fi
 fi
