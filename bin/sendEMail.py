@@ -51,7 +51,7 @@ def send_ses_email(mailAddress,projectName,state):
     <p> We get in touch with you because the analysis project named {} has just changed state to {}.</p>
     <br>
     <p> Sincerely,</p>
-    <p> The Enthera Team</p>
+    <p> The CovidSeq Team</p>
     </body>
     </html>
     """.format(projectName,state)            

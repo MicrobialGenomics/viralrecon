@@ -94,7 +94,7 @@ else
     ### lists all samples within bioproject
     bs list biosamples --project-id=$projectID -f csv > /tmp/${newProjectName}_samples.csv
     mkdir /tmp/$projectString
-    bs download project -i $projectID -o /tmp/$projectString --extension=fastq.gz --overwrite
+    bs download project -i $projectID --concurrent-files=2 -o /tmp/$projectString --extension=fastq.gz --overwrite
 
     if [ ! -z "$3" ] ### If variable is set we'll need to rename all fastq files that have been downloaded.
     then  
@@ -168,9 +168,9 @@ else
     if [[ -e /tmp/${newProjectName}_completed.txt ]];then
         ### Ingest data to DB
         echo "Finishing"
-        $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
+#        $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
         aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}Runs/AggregatedData/
-	python $MYDIR/sendEmail.py mnoguera@irsicaixa.es $newProjectName finished
+	python $MYDIR/sendEMail.py mnoguera@irsicaixa.es $newProjectName finished
         #### Consider running aggregated data analysis and gisaid upload.
     fi
 fi

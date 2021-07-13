@@ -18,6 +18,7 @@ then
     do
       myLog=~/logs/viralrecon_"$(date +"%Y_%m_%d_%I_%M_%p").log"
       . $MYDIR/fetchAndUpload.sh $run | tee > $myLog
+      #. $MYDIR/fetchAndUpload.sh $run 
     done
   if rmdir $LOCKDIR
     then
