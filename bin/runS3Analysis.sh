@@ -90,8 +90,8 @@ then
     -w 's3://microbialgenomics-scratch/' -name ${RunName} --skip_picard_metrics \
     --outdir ${NFOutDir}results --tracedir /tmp/tracedir \
     --leading 20 --trailing 20 --minlen 50 --sliding_window 5 --sliding_window_quality 20 --align_unpaired --callers ivar \
-    -with-report /tmp/${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
-    -with-timeline /tmp/${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
+    -with-report ${NFSamplesFile%%_NFSamples.csv}_NFReport.html \
+    -with-timeline ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html --skip_multiqc
   aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFReport.html ${NFOutDir}results/
   aws s3 cp ${NFSamplesFile%%_NFSamples.csv}_NFtimeline.html ${NFOutDir}results/
 elif [[ $RunProfile == "docker" ]]

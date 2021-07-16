@@ -37,7 +37,7 @@ def send_ses_email(mailAddress,projectName,state):
     # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
 
     # The subject line for the email.
-    SUBJECT = "CovidSeq Analysis event registered"
+    SUBJECT = "CovidSeq Analysis Monitoring"
 
     # The email body for recipients with non-HTML email clients.
     BODY_TEXT = "CovidSeq Analysis has changed\n\n "
@@ -47,11 +47,11 @@ def send_ses_email(mailAddress,projectName,state):
     BODY_HTML = """<html>
     <head></head>
     <body>
-    <h3> CovidSeq Analysis has started </h3>
+    <h3> CovidSeq Analysis event has been registered </h3>
     <p> We get in touch with you because the analysis project named {} has just changed state to {}.</p>
     <br>
     <p> Sincerely,</p>
-    <p> The Enthera Team</p>
+    <p> The CovidSeq Team</p>
     </body>
     </html>
     """.format(projectName,state)            
@@ -98,3 +98,6 @@ def send_ses_email(mailAddress,projectName,state):
     else:
         print("Email sent! Message ID:"),
         print(response['MessageId'])
+
+send_ses_email(sys.argv[1],sys.argv[2],sys.argv[3])
+

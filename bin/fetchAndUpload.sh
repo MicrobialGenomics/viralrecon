@@ -42,11 +42,11 @@ name=$1 || echo "Project name not defined"
 samplesFile=$2 || echo "Metadata file not defined, will process all samples"
 idCrossFile=$3 || echo "No ID CorssFile passed as argument, filenames will need to match library_id"
 
-echo "idCrossFile is: $idCrossFile"
-run_id=`echo $name | sed s/Covid-//`
-echo "Querying database with $run_id"
-$RscriptBin $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
-samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
+#echo "idCrossFile is: $idCrossFile"
+#run_id=`echo $name | sed s/Covid-//`
+#echo "Querying database with $run_id"
+#$RscriptBin $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
+#samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
 
 ### Behaviour: If Id cross File is not provided $name variable will be used throughout and needs to correspond to the basespace project
 ### Otherwise: $name variable will only be used to retrieve samples, but $newProjectName will be used for further labeling
@@ -73,12 +73,17 @@ cat /tmp/${newProjectName}_project.csv
 # fi
 echo "numProjects is: $numProjects"
 if [[ $numProjects -eq 1 ]] ; then
-    echo "Exiting"
-    exit 1 ### Need to exit in order for calling python script not continuign
+	echo "Exiting, no data available (yet) for $newProjectName"
+    #exit 1 ### Need to exit in order for calling python script not continuign
 elif [[ $numProjects -gt 2 ]]; then
     echo "Exiting, too many projects for $newProjectName"
-    exit 1
+    #exit 1
 else
+    echo "idCrossFile is: $idCrossFile"
+    run_id=`echo $name | sed s/Covid-//`
+    echo "Querying database with $run_id"
+    $RscriptBin $MYDIR/samples_from_basespace_project.R -i $run_id -o /tmp/
+    samplesFile=/tmp/metadata_to_fetch_run_${run_id}.csv
     ### Obtain the project BaseSpace ID
     projectID=`cat /tmp/${newProjectName}_project.csv | grep "${name}," | awk 'BEGIN{FS=","}{print $2}'`
     ### Create a unique string for this run
@@ -89,7 +94,7 @@ else
     ### lists all samples within bioproject
     bs list biosamples --project-id=$projectID -f csv > /tmp/${newProjectName}_samples.csv
     mkdir /tmp/$projectString
-    bs download project -i $projectID -o /tmp/$projectString --extension=fastq.gz --overwrite
+    bs download project -i $projectID --concurrent-files=2 -o /tmp/$projectString --extension=fastq.gz --overwrite
 
     if [ ! -z "$3" ] ### If variable is set we'll need to rename all fastq files that have been downloaded.
     then  
@@ -163,8 +168,9 @@ else
     if [[ -e /tmp/${newProjectName}_completed.txt ]];then
         ### Ingest data to DB
         echo "Finishing"
-        $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
+#        $RscriptBin $MYDIR/nf_process_results.R -S ${projectString}/ -s true
         aws s3 cp ${s3Location}$newProjectName.csv ${s3Bucket}Runs/AggregatedData/
+	python $MYDIR/sendEMail.py mnoguera@irsicaixa.es $newProjectName finished
         #### Consider running aggregated data analysis and gisaid upload.
     fi
 fi
