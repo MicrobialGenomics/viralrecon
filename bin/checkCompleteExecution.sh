@@ -14,8 +14,8 @@ aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectSt
 aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NFResults.csv >/dev/null|| not_exist=true
 aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/Pangolin_output.csv >/dev/null|| not_exist=true
 aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/NextCladeSequences_output.csv >/dev/null|| not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.xlsx >/dev/null|| not_exist=true
-aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.fasta >/dev/null || not_exist=true
+#aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.xlsx >/dev/null|| not_exist=true
+#aws s3api head-object --bucket covidseq-14012021-eu-west-1 --key Runs/$projectString/${projectName}_Microbiologia_HUGTiP.fasta >/dev/null || not_exist=true
 
 if $not_exist ; then 
     echo "Project did not run well, apparently"

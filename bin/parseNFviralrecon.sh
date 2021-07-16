@@ -55,17 +55,18 @@ for line in `cat $NFSamplesFile | tail -n +2`
 do
    echo $line
    sampleName=`echo $line | awk 'BEGIN{FS=","}{print $1}'`
+   ### Add trim suffix to sample name in case of amplicon processing.
+   sampleName=${sampleName}.trim
    instrumentID=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $1}'`
    flowcellID=`samtools view /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam | head -n 1 | awk '{print $1}' | awk 'BEGIN{FS=":"}{print $3}'`
-
   echo "sampleName is $sampleName"
     s3FastqR1=`echo $line | awk 'BEGIN{FS=","}{print $2}'`
     s3FastqR2=`echo $line | awk 'BEGIN{FS=","}{print $3}'`
    echo "s3 Files are $s3FastqR1 and $s3FastqR2"
     s3BamFile=${NFOutDir}results/variants/bam/${sampleName}.mkD.sorted.bam
    echo "s3 Bam File is $s3BamFile"
-    s3FastaFile=${NFOutDir}results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa
-    cat /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa  >> /tmp/${NFDirPath}/NextCladeSequences.fasta
+    s3FastaFile=${NFOutDir}results/variants/ivar/consensus/${sampleName%%.trim}.AF0.75.consensus.fa
+    cat /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName%%.trim}.AF0.75.consensus.fa  >> /tmp/${NFDirPath}/NextCladeSequences.fasta
   #  echo "s3 consensus File is $s3FastaFile"
    # samtools depth -q 20 -Q 10 /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.bam > /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv
    # aws s3 cp /tmp/${NFDirPath}/results/variants/bam/${sampleName}.mkD.sorted.cov.tsv ${NFOutDir}results/variants/bam/
@@ -79,9 +80,9 @@ do
    # echo "File has $CovidSeqs covid sequences"
     ConsensusSequence=`tail -n +2 /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | tr -d '\n'`
     DepthOfCoverage=`cat /tmp/${NFDirPath}/results/variants/bam/samtools_stats/${sampleName}.mkD.sorted.cov.tsv | awk '{sum+=$3} END { print sum/NR}'`
-    PercN=`tail -n 1 /tmp/${NFDirPath}/results/variants/ivar/consensus/base_qc/${sampleName}.AF0.75.base_counts.tsv | awk '{print $3}'`
-    NumberN=`seqtk comp /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa | awk '{x+=$9}END{print x}'`
-    ls -la /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName}.AF0.75.consensus.fa
+    PercN=`tail -n 1 /tmp/${NFDirPath}/results/variants/ivar/consensus/base_qc/${sampleName%%.trim}.AF0.75.base_counts.tsv | awk '{print $3}'`
+    NumberN=`seqtk comp /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName%%.trim}.AF0.75.consensus.fa | awk '{x+=$9}END{print x}'`
+    ls -la /tmp/${NFDirPath}/results/variants/ivar/consensus/${sampleName%%.trim}.AF0.75.consensus.fa
     echo "Number of N is: $NumberN"
     #echo "$PercN of genome is N"
     PercCov=`echo "100*(1-($NumberN/29930))" | bc -l`
